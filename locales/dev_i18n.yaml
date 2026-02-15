@@ -1,0 +1,40 @@
+# 开发阶段多语言定义（人类可读 key）
+# 打包时会自动转换为编码映射
+
+nav:
+  home: "首页"
+  about: "关于"
+
+app:
+  title: "应用模板"
+  welcome: "欢迎使用薯片生态"
+  description: "这是一个标准的应用插件模板"
+
+card:
+  title: "示例卡片"
+  description: "这是一个演示无头组件和主题样式的示例卡片"
+
+home:
+  title: "首页"
+  subtitle: "欢迎使用薯片生态应用插件模板"
+  features: "功能演示"
+  features_desc: "此模板演示了如何使用 Bridge API、组件库和多语言系统"
+  current_file: "当前文件"
+  no_file: "未打开任何文件"
+  actions: "操作示例"
+  load_example: "加载示例文件"
+
+about:
+  title: "关于"
+  subtitle: "应用插件信息"
+  info: "插件信息"
+  version: "版本"
+  publisher: "发布者"
+  license: "许可证"
+  theme: "主题设置"
+  theme_desc: "当前主题由薯片主机管理，插件会自动适配"
+  current_theme: "当前主题"
+  language: "语言设置"
+  language_desc: "当前语言由薯片主机管理，插件会自动适配"
+  current_language: "当前语言"
+  supported_languages: "支持的语言"

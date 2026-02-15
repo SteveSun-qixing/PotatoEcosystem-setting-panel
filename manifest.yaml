@@ -1,0 +1,35 @@
+schemaVersion: "1.0"
+id: "official.template-app"
+name: "应用模板"
+version: "1.0.0"
+type: "app"
+publisher: "Chips Official"
+description: "薯片生态应用插件标准模板"
+icon: "assets/icon.png"
+
+entry:
+  main: "dist/index.html"
+
+permissions:
+  - file.read
+  - config.get
+  - config.set
+  - theme.read
+  - i18n.translate
+  - log.info
+  - log.error
+
+window:
+  width: 1000
+  height: 700
+  minWidth: 400
+  minHeight: 300
+  resizable: true
+  frame: false
+
+locales:
+  default: "zh-CN"
+  supported: ["zh-CN", "en-US", "ja-JP"]
+
+dependencies:
+  host: ">=1.0.0"

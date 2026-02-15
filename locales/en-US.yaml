@@ -1,0 +1,56 @@
+version: "1.0.0"
+language: "en-US"
+scope: "plugin"
+plugin_id: "official.template-app"
+
+vocabulary:
+  i18n.plugin.600001:
+    text: "Home"
+  i18n.plugin.600002:
+    text: "About"
+  i18n.plugin.600003:
+    text: "Sample Card"
+  i18n.plugin.600004:
+    text: "This is a sample card demonstrating headless components and theme styles"
+  i18n.plugin.600005:
+    text: "Home"
+  i18n.plugin.600006:
+    text: "Welcome to Chips Ecosystem App Plugin Template"
+  i18n.plugin.600007:
+    text: "Features"
+  i18n.plugin.600008:
+    text: "This template demonstrates how to use Bridge API, component library, and i18n system"
+  i18n.plugin.600009:
+    text: "Current File"
+  i18n.plugin.600010:
+    text: "No file opened"
+  i18n.plugin.600011:
+    text: "Actions"
+  i18n.plugin.600012:
+    text: "Load Example File"
+  i18n.plugin.600013:
+    text: "About"
+  i18n.plugin.600014:
+    text: "App Plugin Information"
+  i18n.plugin.600015:
+    text: "Plugin Info"
+  i18n.plugin.600016:
+    text: "Version"
+  i18n.plugin.600017:
+    text: "Publisher"
+  i18n.plugin.600018:
+    text: "License"
+  i18n.plugin.600019:
+    text: "Theme Settings"
+  i18n.plugin.600020:
+    text: "Current theme is managed by Chips Host, plugin will adapt automatically"
+  i18n.plugin.600021:
+    text: "Current Theme"
+  i18n.plugin.600022:
+    text: "Language Settings"
+  i18n.plugin.600023:
+    text: "Current language is managed by Chips Host, plugin will adapt automatically"
+  i18n.plugin.600024:
+    text: "Current Language"
+  i18n.plugin.600025:
+    text: "Supported Languages"

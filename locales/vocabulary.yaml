@@ -1,0 +1,34 @@
+# 插件词汇表
+# 定义插件专用词汇的编码映射
+# 编码范围：i18n.plugin.600000-899999
+
+version: "1.0.0"
+plugin_id: "official.template-app"
+
+# 编码映射（开发时手动维护，打包时自动生成）
+mapping:
+  "nav.home": "i18n.plugin.600001"
+  "nav.about": "i18n.plugin.600002"
+  "card.title": "i18n.plugin.600003"
+  "card.description": "i18n.plugin.600004"
+  "home.title": "i18n.plugin.600005"
+  "home.subtitle": "i18n.plugin.600006"
+  "home.features": "i18n.plugin.600007"
+  "home.features_desc": "i18n.plugin.600008"
+  "home.current_file": "i18n.plugin.600009"
+  "home.no_file": "i18n.plugin.600010"
+  "home.actions": "i18n.plugin.600011"
+  "home.load_example": "i18n.plugin.600012"
+  "about.title": "i18n.plugin.600013"
+  "about.subtitle": "i18n.plugin.600014"
+  "about.info": "i18n.plugin.600015"
+  "about.version": "i18n.plugin.600016"
+  "about.publisher": "i18n.plugin.600017"
+  "about.license": "i18n.plugin.600018"
+  "about.theme": "i18n.plugin.600019"
+  "about.theme_desc": "i18n.plugin.600020"
+  "about.current_theme": "i18n.plugin.600021"
+  "about.language": "i18n.plugin.600022"
+  "about.language_desc": "i18n.plugin.600023"
+  "about.current_language": "i18n.plugin.600024"
+  "about.supported_languages": "i18n.plugin.600025"

@@ -1,0 +1,57 @@
+{
+  "name": "@chips/template-app",
+  "version": "1.0.0",
+  "description": "薯片生态应用插件标准模板 - Chips Ecosystem App Plugin Template",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src --ext .ts,.vue",
+    "lint:fix": "eslint src --ext .ts,.vue --fix",
+    "type-check": "vue-tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{ts,vue,yaml,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,vue,yaml,json}\"",
+    "clean": "rm -rf dist node_modules/.vite"
+  },
+  "dependencies": {
+    "@chips/sdk": "workspace:*",
+    "@chips/components": "workspace:*",
+    "vue": "^3.4.0",
+    "vue-router": "^4.2.0",
+    "pinia": "^2.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "@vue/test-utils": "^2.4.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0",
+    "@vitest/coverage-v8": "^1.2.0",
+    "eslint": "^8.56.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-vue": "^9.20.0",
+    "happy-dom": "^13.0.0",
+    "prettier": "^3.2.4",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.0",
+    "vitest": "^1.2.0",
+    "vue-tsc": "^2.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "chips",
+    "template",
+    "app",
+    "plugin",
+    "vue3",
+    "typescript"
+  ],
+  "author": "Chips Official",
+  "license": "MIT"
+}
