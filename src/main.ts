@@ -3,6 +3,9 @@ import { createPinia } from 'pinia';
 import { ChipsSDK } from '@chips/sdk';
 import App from './App.vue';
 import router from './router';
+import { zhCN } from './locales/zh-CN';
+import { enUS } from './locales/en-US';
+import { jaJP } from './locales/ja-JP';
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -10,6 +13,11 @@ const sdk = new ChipsSDK({
   autoConnect: true,
   debug: import.meta.env.DEV,
 });
+
+// 加载插件词汇表（三语言）
+sdk.i18n.addTranslation('zh-CN', zhCN);
+sdk.i18n.addTranslation('en-US', enUS);
+sdk.i18n.addTranslation('ja-JP', jaJP);
 
 app.use(pinia);
 app.use(router);
