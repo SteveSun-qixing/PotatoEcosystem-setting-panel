@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue';
 
 import { ChipsButton, ChipsInput, ChipsSelect, ChipsSwitch } from '@chips/components';
 
+import { DEFAULT_THEME_ID } from '@/constants/theme';
 import { useI18n } from '@/composables/use-i18n';
 import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
 import type { ThemeOption } from '@/types';
@@ -12,7 +13,7 @@ const loading = ref(false);
 const saving = ref(false);
 const error = ref('');
 const themes = ref<ThemeOption[]>([]);
-const currentThemeId = ref('default');
+const currentThemeId = ref(DEFAULT_THEME_ID);
 
 const installPath = ref('');
 const installOverwrite = ref(false);

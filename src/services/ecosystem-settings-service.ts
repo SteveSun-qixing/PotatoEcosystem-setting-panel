@@ -9,6 +9,7 @@ import type {
   ThemeOption,
   WorkspaceExchangePolicy
 } from '@/types';
+import { DEFAULT_THEME_ID } from '@/constants/theme';
 
 import { invokeBridge, invokeFirstSuccessful, isRouteMissingError } from './bridge-client';
 
@@ -97,7 +98,7 @@ const CONFIG_KEYS = {
 
 const DEFAULT_SETTINGS: GeneralSettings = {
   locale: 'zh-CN',
-  themeId: 'default',
+  themeId: DEFAULT_THEME_ID,
   workspacePath: '',
   autoStart: true,
   allowExternalLinks: false
@@ -527,13 +528,13 @@ export class EcosystemSettingsService {
   public async getCurrentThemeId(): Promise<string> {
     try {
       const response = await invokeBridge<ThemeCurrentResponse>('theme', 'getCurrent', {});
-      return asString(response.id ?? response.themeId, 'default');
+      return asString(response.id ?? response.themeId, DEFAULT_THEME_ID);
     } catch (error: unknown) {
       if (!isRouteMissingError(error)) {
         const message = error instanceof Error ? error.message.toLowerCase() : '';
         if (message.includes('current') || message.includes('not set') || message.includes('not configured')) {
-          const fallback = await this.getConfigValue(CONFIG_KEYS.themeGlobal, 'default');
-          return asString(fallback, 'default');
+          const fallback = await this.getConfigValue(CONFIG_KEYS.themeGlobal, DEFAULT_THEME_ID);
+          return asString(fallback, DEFAULT_THEME_ID);
         }
 
         throw error;
@@ -542,15 +543,15 @@ export class EcosystemSettingsService {
 
     try {
       const legacy = await invokeBridge<ThemeCurrentResponse>('theme', 'getCurrentTheme', {});
-      return asString(legacy.id ?? legacy.themeId, 'default');
+      return asString(legacy.id ?? legacy.themeId, DEFAULT_THEME_ID);
     } catch (legacyError: unknown) {
       if (!isRouteMissingError(legacyError)) {
         throw legacyError;
       }
     }
 
-    const fallback = await this.getConfigValue(CONFIG_KEYS.themeGlobal, 'default');
-    return asString(fallback, 'default');
+    const fallback = await this.getConfigValue(CONFIG_KEYS.themeGlobal, DEFAULT_THEME_ID);
+    return asString(fallback, DEFAULT_THEME_ID);
   }
 
   public async applyTheme(themeId: string): Promise<void> {

@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue';
 
 import { ChipsButton, ChipsInput, ChipsSelect, ChipsSwitch } from '@chips/components';
 
+import { DEFAULT_THEME_ID } from '@/constants/theme';
 import { useI18n } from '@/composables/use-i18n';
 import { useGeneralSettingsStore } from '@/stores/general-settings';
 
@@ -17,7 +18,7 @@ const localeOptions = computed(() => [
 
 const themeOptions = computed(() => {
   if (generalSettingsStore.themes.length === 0) {
-    return [{ value: 'default', label: t('i18n.plugin.692007') }];
+    return [{ value: DEFAULT_THEME_ID, label: t('i18n.plugin.692007') }];
   }
 
   return generalSettingsStore.themes.map((theme) => ({

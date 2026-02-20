@@ -33,7 +33,7 @@
             <p class="chips-text--muted">{{ t('i18n.plugin.600020') }}</p>
             <div class="chips-theme-info">
               <span class="chips-theme-info__label">{{ t('i18n.plugin.600021') }}</span>
-              <span class="chips-theme-info__value">{{ currentTheme || 'default' }}</span>
+              <span class="chips-theme-info__value">{{ currentTheme || DEFAULT_THEME_ID }}</span>
             </div>
           </div>
         </div>
@@ -62,6 +62,7 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue';
 import type { ChipsSDK } from '@chips/sdk';
+import { DEFAULT_THEME_ID } from '@/constants/theme';
 
 const sdk = inject<ChipsSDK>('sdk');
 

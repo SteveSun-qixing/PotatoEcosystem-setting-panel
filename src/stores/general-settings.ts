@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 
+import { DEFAULT_THEME_ID } from '@/constants/theme';
 import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
 import type { GeneralSettings, ThemeOption } from '@/types';
 
@@ -13,7 +14,7 @@ interface GeneralSettingsState {
 
 const DEFAULT_FORM: GeneralSettings = {
   locale: 'zh-CN',
-  themeId: 'default',
+  themeId: DEFAULT_THEME_ID,
   workspacePath: '',
   autoStart: true,
   allowExternalLinks: false
