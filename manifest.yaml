@@ -30,7 +30,7 @@ window:
   minWidth: 900
   minHeight: 620
   resizable: true
-  frame: false
+  frame: true
 
 locales:
   default: "zh-CN"
