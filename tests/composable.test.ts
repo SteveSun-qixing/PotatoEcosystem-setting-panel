@@ -1,37 +1,41 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
+import { describe, it, expect } from 'vitest';
 import { defineComponent } from 'vue';
-import { useSample } from '../src/composables/use-sample';
-import { ChipsSDK } from '@chips/sdk';
+import { mount } from '@vue/test-utils';
 
-describe('useSample Composable', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+import { useI18n } from '@/composables/use-i18n';
 
-    global.window.chips = {
-      invoke: vi.fn(),
-    } as any;
-  });
-
-  it('should provide translation function', () => {
-    const sdk = new ChipsSDK({ autoConnect: false });
-
+describe('useI18n', () => {
+  it('returns translated text with injected sdk', () => {
     const TestComponent = defineComponent({
       setup() {
-        const { t } = useSample();
-        return { t };
+        const { t } = useI18n();
+        return { text: t('demo.key') };
       },
-      template: '<div>{{ t("test.key") }}</div>',
+      template: '<div>{{ text }}</div>'
     });
 
     const wrapper = mount(TestComponent, {
       global: {
         provide: {
-          sdk,
-        },
-      },
+          sdk: {
+            t: (key: string) => `translated:${key}`
+          }
+        }
+      }
     });
 
-    expect(wrapper.exists()).toBe(true);
+    expect(wrapper.text()).toBe('translated:demo.key');
+  });
+
+  it('throws when sdk is missing', () => {
+    const TestComponent = defineComponent({
+      setup() {
+        useI18n();
+        return {};
+      },
+      template: '<div />'
+    });
+
+    expect(() => mount(TestComponent)).toThrow('SDK not provided');
   });
 });

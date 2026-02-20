@@ -1,23 +1,14 @@
-/**
- * 应用插件类型定义
- */
-
-export interface AppConfig {
-  lastOpenedFile: string | null;
-  theme: string;
-  language: string;
-}
-
-export interface FileItem {
-  path: string;
-  name: string;
-  size: number;
-  modifiedAt: number;
-}
-
-export interface AppState {
-  initialized: boolean;
-  currentFile: string | null;
-  fileList: FileItem[];
-  loading: boolean;
-}
+export type {
+  PluginType,
+  RuntimeOverview,
+  RuntimeHealthCheck,
+  RuntimeHealthSnapshot,
+  RuntimeLogQueryParams,
+  RuntimeLogQueryResult,
+  PluginRecord,
+  GeneralSettings,
+  ThemeOption,
+  SelectOptionItem,
+  BundleStatus,
+  WorkspaceExchangePolicy
+} from './ecosystem';

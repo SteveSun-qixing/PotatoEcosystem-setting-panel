@@ -1,29 +1,34 @@
-schemaVersion: "1.0"
-id: "official.template-app"
-name: "应用模板"
+schemaVersion: "1.0.0"
+id: "chips-official.ecosystem-settings"
+name: "生态设置面板"
 version: "1.0.0"
 type: "app"
+autoStart: true
 publisher: "Chips Official"
-description: "薯片生态应用插件标准模板"
+description: "薯片生态设置面板，提供运行状态监控、插件管理与通用配置管理能力。"
 icon: "assets/icon.png"
 
 entry:
   main: "dist/index.html"
 
 permissions:
-  - file.read
-  - config.get
-  - config.set
+  - sys.read
+  - sys.restart
+  - plugin.read
+  - plugin.install
+  - plugin.uninstall
+  - plugin.manage
+  - config.read
+  - config.write
   - theme.read
-  - i18n.translate
-  - log.info
-  - log.error
+  - i18n.read
+  - i18n.write
 
 window:
-  width: 1000
-  height: 700
-  minWidth: 400
-  minHeight: 300
+  width: 1220
+  height: 780
+  minWidth: 900
+  minHeight: 620
   resizable: true
   frame: false
 
@@ -31,5 +36,5 @@ locales:
   default: "zh-CN"
   supported: ["zh-CN", "en-US", "ja-JP"]
 
-dependencies:
-  host: ">=1.0.0"
+compatibility:
+  host: "^1.0.0"
