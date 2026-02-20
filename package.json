@@ -5,41 +5,40 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint": "eslint src --ext .ts,.vue",
-    "lint:fix": "eslint src --ext .ts,.vue --fix",
-    "type-check": "vue-tsc --noEmit",
-    "format": "prettier --write \"src/**/*.{ts,vue,yaml,json,css}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,vue,yaml,json,css}\"",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{ts,tsx,yaml,json,css}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,yaml,json,css}\"",
     "clean": "rm -rf dist node_modules/.vite"
   },
   "dependencies": {
-    "@chips/components": "workspace:*",
-    "@chips/sdk": "workspace:*",
-    "pinia": "^2.1.0",
-    "vue": "^3.4.0",
-    "vue-router": "^4.2.0"
+    "@chips/component-library": "file:../Chips-ComponentLibrary/packages/component-library",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.2.0",
     "@types/node": "^20.11.0",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
-    "@vitejs/plugin-vue": "^5.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
     "@vitest/coverage-v8": "^1.2.0",
-    "@vue/test-utils": "^2.4.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-vue": "^9.20.0",
-    "happy-dom": "^13.0.0",
+    "jsdom": "^26.1.0",
     "prettier": "^3.2.4",
     "typescript": "^5.3.3",
     "vite": "^5.0.0",
-    "vitest": "^1.2.0",
-    "vue-tsc": "^2.0.0"
+    "vitest": "^1.2.0"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -50,7 +49,7 @@
     "settings",
     "app",
     "plugin",
-    "vue3",
+    "react",
     "typescript"
   ],
   "author": "Chips Official",

@@ -360,19 +360,11 @@ export class EcosystemSettingsService {
     }
   }
 
-  public async installPlugin(sourcePath: string, force: boolean): Promise<void> {
-    await invokeFirstSuccessful([
-      {
-        namespace: 'plugin',
-        action: 'install',
-        params: { sourcePath, force }
-      },
-      {
-        namespace: 'plugin',
-        action: 'install',
-        params: { source: sourcePath, auto_enable: true }
-      }
-    ]);
+  public async installPlugin(packagePath: string, force: boolean): Promise<void> {
+    await invokeBridge('plugin', 'install', {
+      packagePath,
+      ...(force ? { force: true } : {})
+    });
   }
 
   public async uninstallPlugin(plugin: PluginRecord): Promise<void> {
