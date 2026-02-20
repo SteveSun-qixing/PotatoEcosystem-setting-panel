@@ -1,42 +1,45 @@
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
 import { ChipsSDK } from '@chips/sdk';
+
 import App from './App.vue';
-import router from './router';
 import { zhCN } from './locales/zh-CN';
 import { enUS } from './locales/en-US';
 import { jaJP } from './locales/ja-JP';
+import './styles/index.css';
 
 const app = createApp(App);
 const pinia = createPinia();
+
 const sdk = new ChipsSDK({
   autoConnect: true,
-  debug: import.meta.env.DEV,
+  debug: import.meta.env.DEV
 });
 
-// 加载插件词汇表（三语言）
 sdk.i18n.addTranslation('zh-CN', zhCN);
 sdk.i18n.addTranslation('en-US', enUS);
 sdk.i18n.addTranslation('ja-JP', jaJP);
 
 app.use(pinia);
-app.use(router);
-
 app.provide('sdk', sdk);
 
 sdk
   .initialize()
   .then(() => {
-    console.log('SDK initialized successfully');
     app.mount('#app');
   })
-  .catch((error) => {
-    console.error('Failed to initialize SDK:', error);
-    document.body.innerHTML = `
-      <div style="padding: 20px; color: red;">
-        <h1>初始化失败</h1>
-        <p>SDK 初始化失败，请检查薯片主机是否正常运行。</p>
-        <pre>${error.message}</pre>
-      </div>
-    `;
+  .catch((error: unknown) => {
+    const root = document.querySelector('#app');
+    if (!root) {
+      return;
+    }
+
+    const reason = error instanceof Error ? error.message : String(error);
+    root.innerHTML = [
+      '<div class="chips-settings-bootstrap-error">',
+      `<h1 class="chips-settings-bootstrap-error__title">${zhCN.i18n.plugin['699010']}</h1>`,
+      `<p class="chips-settings-bootstrap-error__desc">${zhCN.i18n.plugin['699011']}</p>`,
+      `<pre class="chips-settings-bootstrap-error__reason">${reason}</pre>`,
+      '</div>'
+    ].join('');
   });

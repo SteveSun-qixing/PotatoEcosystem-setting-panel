@@ -1,31 +1,46 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
-import { createPinia } from 'pinia';
-import SampleCard from '../src/components/SampleCard.vue';
-import { ChipsSDK } from '@chips/sdk';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createPinia, setActivePinia } from 'pinia';
 
-describe('SampleCard', () => {
+import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
+import { useGeneralSettingsStore } from '@/stores/general-settings';
+
+describe('general settings store', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    setActivePinia(createPinia());
+    vi.restoreAllMocks();
   });
 
-  it('should render sample card with correct CSS classes', () => {
-    const pinia = createPinia();
-    const sdk = new ChipsSDK({ autoConnect: false });
-
-    const wrapper = mount(SampleCard, {
-      global: {
-        plugins: [pinia],
-        provide: {
-          sdk,
-        },
-      },
+  it('loads form and themes', async () => {
+    vi.spyOn(ecosystemSettingsService, 'loadGeneralSettings').mockResolvedValue({
+      locale: 'en-US',
+      themeId: 'dark',
+      workspacePath: '/tmp/workspace',
+      autoStart: false,
+      allowExternalLinks: true
     });
+    vi.spyOn(ecosystemSettingsService, 'listThemeOptions').mockResolvedValue([
+      { id: 'dark', name: 'Dark' }
+    ]);
 
-    expect(wrapper.find('.chips-card-wrapper').exists()).toBe(true);
-    expect(wrapper.find('.chips-card-wrapper__header').exists()).toBe(true);
-    expect(wrapper.find('.chips-card-wrapper__content').exists()).toBe(true);
-    expect(wrapper.find('.chips-button--primary').exists()).toBe(true);
-    expect(wrapper.find('.chips-button--ghost').exists()).toBe(true);
+    const store = useGeneralSettingsStore();
+    await store.load();
+
+    expect(store.form.locale).toBe('en-US');
+    expect(store.themes).toHaveLength(1);
+  });
+
+  it('saves current form', async () => {
+    const saveSpy = vi.spyOn(ecosystemSettingsService, 'saveGeneralSettings').mockResolvedValue();
+
+    const store = useGeneralSettingsStore();
+    store.updateForm({ locale: 'ja-JP' });
+
+    await store.save();
+
+    expect(saveSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        locale: 'ja-JP'
+      })
+    );
   });
 });
