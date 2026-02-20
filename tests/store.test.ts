@@ -1,35 +1,38 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { setActivePinia, createPinia } from 'pinia';
-import { useAppStore } from '../src/stores/app';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createPinia, setActivePinia } from 'pinia';
 
-describe('App Store', () => {
+import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
+import { usePluginsStore } from '@/stores/plugins';
+
+describe('store workflows', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
-    vi.clearAllMocks();
-
-    global.window.chips = {
-      invoke: vi.fn().mockResolvedValue(null),
-    } as any;
+    vi.restoreAllMocks();
   });
 
-  it('should initialize with default state', () => {
-    const store = useAppStore();
+  it('installs plugin and refreshes list', async () => {
+    const installSpy = vi.spyOn(ecosystemSettingsService, 'installPlugin').mockResolvedValue();
+    const listSpy = vi
+      .spyOn(ecosystemSettingsService, 'listPlugins')
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          id: 'chips.new',
+          name: 'new',
+          version: '1.0.0',
+          type: 'app',
+          publisher: 'chips',
+          installPath: '/tmp/chips.new',
+          enabled: true
+        }
+      ]);
 
-    expect(store.initialized).toBe(false);
-    expect(store.currentFile).toBe(null);
-    expect(store.loading).toBe(false);
-  });
+    const store = usePluginsStore();
+    await store.refresh();
+    await store.install('/tmp/chips.new', false);
 
-  it('should update current file when opening file', async () => {
-    const store = useAppStore();
-    const testPath = '/test/file.txt';
-
-    await store.openFile(testPath);
-
-    expect(store.currentFile).toBe(testPath);
-    expect(window.chips.invoke).toHaveBeenCalledWith('config', 'set', {
-      key: 'app.lastOpenedFile',
-      value: testPath,
-    });
+    expect(installSpy).toHaveBeenCalledWith('/tmp/chips.new', false);
+    expect(listSpy).toHaveBeenCalledTimes(2);
+    expect(store.items[0].id).toBe('chips.new');
   });
 });

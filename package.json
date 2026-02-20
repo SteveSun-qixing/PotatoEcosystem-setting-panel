@@ -1,7 +1,7 @@
 {
-  "name": "@chips/template-app",
+  "name": "@chips/app-settings",
   "version": "1.0.0",
-  "description": "薯片生态应用插件标准模板 - Chips Ecosystem App Plugin Template",
+  "description": "Chips Ecosystem Settings - 薯片生态设置面板应用插件",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -13,24 +13,24 @@
     "lint": "eslint src --ext .ts,.vue",
     "lint:fix": "eslint src --ext .ts,.vue --fix",
     "type-check": "vue-tsc --noEmit",
-    "format": "prettier --write \"src/**/*.{ts,vue,yaml,json}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,vue,yaml,json}\"",
+    "format": "prettier --write \"src/**/*.{ts,vue,yaml,json,css}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,vue,yaml,json,css}\"",
     "clean": "rm -rf dist node_modules/.vite"
   },
   "dependencies": {
-    "@chips/sdk": "workspace:*",
     "@chips/components": "workspace:*",
+    "@chips/sdk": "workspace:*",
+    "pinia": "^2.1.0",
     "vue": "^3.4.0",
-    "vue-router": "^4.2.0",
-    "pinia": "^2.1.0"
+    "vue-router": "^4.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
-    "@vitejs/plugin-vue": "^5.0.0",
-    "@vue/test-utils": "^2.4.0",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
+    "@vitejs/plugin-vue": "^5.0.0",
     "@vitest/coverage-v8": "^1.2.0",
+    "@vue/test-utils": "^2.4.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-vue": "^9.20.0",
@@ -46,7 +46,8 @@
   },
   "keywords": [
     "chips",
-    "template",
+    "ecosystem",
+    "settings",
     "app",
     "plugin",
     "vue3",

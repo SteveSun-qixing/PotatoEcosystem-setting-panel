@@ -1,27 +1,51 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { mount } from '@vue/test-utils';
-import { createPinia } from 'pinia';
-import HomeView from '../src/views/HomeView.vue';
-import { ChipsSDK } from '@chips/sdk';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createPinia, setActivePinia } from 'pinia';
 
-describe('HomeView', () => {
+import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
+import { useOverviewStore } from '@/stores/overview';
+
+describe('overview store', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    setActivePinia(createPinia());
+    vi.restoreAllMocks();
   });
 
-  it('should render home view correctly', () => {
-    const pinia = createPinia();
-    const sdk = new ChipsSDK({ autoConnect: false });
-
-    const wrapper = mount(HomeView, {
-      global: {
-        plugins: [pinia],
-        provide: {
-          sdk,
-        },
-      },
+  it('refreshes runtime snapshot', async () => {
+    vi.spyOn(ecosystemSettingsService, 'getRuntimeOverview').mockResolvedValue({
+      hostVersion: '1.0.0',
+      hostPid: 1,
+      uptimeMs: 100,
+      platform: 'darwin',
+      nodeVersion: 'v22',
+      routeCount: 3,
+      namespaceCount: 2,
+      p95LatencyMs: 12,
+      errorCount: 0,
+      controlPlaneOnline: true
+    });
+    vi.spyOn(ecosystemSettingsService, 'getRuntimeHealth').mockResolvedValue({
+      healthy: true,
+      checks: [
+        {
+          id: 'runtime.status',
+          healthy: true,
+          message: 'ok'
+        }
+      ]
     });
 
-    expect(wrapper.find('.chips-view--home').exists()).toBe(true);
+    const store = useOverviewStore();
+    await store.refresh();
+
+    expect(store.snapshot?.hostVersion).toBe('1.0.0');
+    expect(store.error).toBe('');
+  });
+
+  it('captures restart errors', async () => {
+    vi.spyOn(ecosystemSettingsService, 'restartHost').mockRejectedValue(new Error('restart denied'));
+
+    const store = useOverviewStore();
+    await expect(store.restart('test')).rejects.toThrow('restart denied');
+    expect(store.error).toContain('restart denied');
   });
 });

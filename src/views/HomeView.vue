@@ -12,7 +12,7 @@
         <h2 class="chips-section__title">{{ t('i18n.plugin.600007') }}</h2>
         <div class="chips-section__content">
           <p>{{ t('i18n.plugin.600008') }}</p>
-          <div class="chips-file-info" v-if="currentFile">
+          <div v-if="currentFile" class="chips-file-info">
             <span class="chips-file-info__label">{{ t('i18n.plugin.600009') }}</span>
             <span class="chips-file-info__value">{{ currentFile }}</span>
           </div>

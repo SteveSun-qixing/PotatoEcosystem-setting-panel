@@ -2,7 +2,7 @@
 
 declare module '*.vue' {
   import type { DefineComponent } from 'vue';
-  const component: DefineComponent<{}, {}, any>;
+  const component: DefineComponent<Record<string, unknown>, Record<string, unknown>, unknown>;
   export default component;
 }
 
@@ -17,7 +17,9 @@ interface ImportMeta {
 }
 
 interface ChipsBridgeAPI {
-  invoke(service: string, action: string, params?: Record<string, unknown>): Promise<unknown>;
+  invoke(namespace: string, action: string, params?: unknown): Promise<unknown>;
+  on?(event: string, handler: (payload: unknown) => void): (() => void) | void;
+  once?(event: string, handler: (payload: unknown) => void): (() => void) | void;
 }
 
 interface Window {

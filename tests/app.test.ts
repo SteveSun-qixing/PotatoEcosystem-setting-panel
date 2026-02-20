@@ -1,47 +1,50 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { mount } from '@vue/test-utils';
 import { createPinia } from 'pinia';
-import App from '../src/App.vue';
-import { ChipsSDK } from '@chips/sdk';
 
-describe('App Initialization', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+import App from '@/App.vue';
 
-  it('should create app instance successfully', () => {
-    const pinia = createPinia();
-    const sdk = new ChipsSDK({ autoConnect: false });
+function createSdkStub() {
+  return {
+    t: (key: string) => key
+  };
+}
 
+describe('App shell', () => {
+  it('renders sidebar menu', () => {
     const wrapper = mount(App, {
       global: {
-        plugins: [pinia],
+        plugins: [createPinia()],
         provide: {
-          sdk,
+          sdk: createSdkStub()
         },
         stubs: {
-          RouterLink: true,
-          RouterView: true,
-        },
-      },
+          OverviewPanel: {
+            template: '<div>overview</div>'
+          },
+          LanguagePanel: {
+            template: '<div>language</div>'
+          },
+          ThemePanel: {
+            template: '<div>theme</div>'
+          },
+          PluginPanel: {
+            template: '<div>plugins</div>'
+          },
+          BundlePanel: {
+            template: '<div>bundle</div>'
+          },
+          FileSystemPanel: {
+            template: '<div>filesystem</div>'
+          }
+        }
+      }
     });
 
-    expect(wrapper.exists()).toBe(true);
-  });
-
-  it('should throw error when SDK is not provided', () => {
-    const pinia = createPinia();
-
-    expect(() => {
-      mount(App, {
-        global: {
-          plugins: [pinia],
-          stubs: {
-            RouterLink: true,
-            RouterView: true,
-          },
-        },
-      });
-    }).toThrow('SDK not provided');
+    expect(wrapper.text()).toContain('i18n.plugin.699007');
+    expect(wrapper.text()).toContain('i18n.plugin.699012');
+    expect(wrapper.text()).toContain('i18n.plugin.699014');
+    expect(wrapper.text()).toContain('i18n.plugin.699016');
+    expect(wrapper.text()).toContain('i18n.plugin.699018');
   });
 });

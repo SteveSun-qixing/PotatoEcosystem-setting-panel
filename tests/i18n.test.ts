@@ -1,30 +1,31 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { ChipsSDK } from '@chips/sdk';
+import { describe, expect, it } from 'vitest';
 
-describe('I18n Integration', () => {
-  let sdk: ChipsSDK;
+import { zhCN } from '@/locales/zh-CN';
+import { enUS } from '@/locales/en-US';
+import { jaJP } from '@/locales/ja-JP';
 
-  beforeEach(() => {
-    sdk = new ChipsSDK({ autoConnect: false });
+function collectKeys(node: Record<string, unknown>, prefix = ''): string[] {
+  return Object.entries(node).flatMap(([key, value]) => {
+    const nextKey = prefix ? `${prefix}.${key}` : key;
+    if (typeof value === 'string') {
+      return [nextKey];
+    }
+
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return collectKeys(value as Record<string, unknown>, nextKey);
+    }
+
+    return [];
   });
+}
 
-  it('should translate text using SDK', () => {
-    const key = 'test.key';
-    const result = sdk.t(key);
+describe('locale consistency', () => {
+  it('keeps locale key sets aligned', () => {
+    const zhKeys = collectKeys(zhCN as unknown as Record<string, unknown>).sort();
+    const enKeys = collectKeys(enUS as unknown as Record<string, unknown>).sort();
+    const jaKeys = collectKeys(jaJP as unknown as Record<string, unknown>).sort();
 
-    expect(typeof result).toBe('string');
-  });
-
-  it('should handle translation with parameters', () => {
-    const key = 'test.key';
-    const params = { count: 5 };
-    const result = sdk.t(key, params);
-
-    expect(typeof result).toBe('string');
-  });
-
-  it('should get current locale', () => {
-    const locale = sdk.i18n.locale;
-    expect(typeof locale).toBe('string');
+    expect(enKeys).toEqual(zhKeys);
+    expect(jaKeys).toEqual(zhKeys);
   });
 });
