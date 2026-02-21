@@ -160,6 +160,10 @@ body {
   line-height: 1.4;
 }
 
+.chips-settings-card__header {
+  padding: 16px;
+}
+
 .chips-settings-card__meta {
   margin: 8px 0 0;
   color: var(--chips-settings-muted);
@@ -251,9 +255,21 @@ body {
   gap: 8px;
 }
 
+.chips-settings-table__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .chips-settings-table__empty {
   text-align: center;
   color: var(--chips-settings-muted);
+}
+
+.chips-settings-table__hint {
+  margin: 0;
+  color: var(--chips-settings-muted);
+  font-size: 12px;
 }
 
 .chips-settings-form {
@@ -322,6 +338,11 @@ body {
   color: var(--chips-settings-danger);
 }
 
+.chips-settings-status--default {
+  background: var(--chips-settings-warning);
+  color: var(--chips-settings-panel-bg);
+}
+
 .chips-settings-log {
   margin-top: 12px;
   border: 1px solid var(--chips-settings-border);
@@ -385,6 +406,14 @@ body {
   font-size: 12px;
   color: var(--chips-settings-muted);
   word-break: break-all;
+}
+
+[data-scope='dialog'][data-part='positioner'] {
+  z-index: var(--chips-z-index-modal-backdrop, 1390) !important;
+}
+
+.chips-settings-confirm-dialog [data-part='close'] {
+  display: none;
 }
 
 .chips-settings-bootstrap-error {

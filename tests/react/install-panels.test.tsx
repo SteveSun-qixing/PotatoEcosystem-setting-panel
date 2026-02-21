@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { I18nContext, translate } from '@/i18n';
@@ -59,8 +59,12 @@ beforeEach(() => {
   mockService.uninstallPlugin.mockResolvedValue(undefined);
   mockService.applyPluginUpdates.mockResolvedValue([]);
 
-  mockService.listThemeOptions.mockResolvedValue([{ id: 'chips.theme.default', name: 'Default', version: '1.0.0' }]);
-  mockService.getCurrentThemeId.mockResolvedValue('chips.theme.default');
+  mockService.listThemeOptions.mockResolvedValue([
+    { id: 'chips-official.default-theme', name: 'Default Theme', version: '1.0.0' },
+    { id: 'chips.theme.ocean', name: 'Ocean Theme', version: '1.2.0' },
+    { id: 'chips.theme.dark', name: 'Dark Theme', version: '2.0.0' }
+  ]);
+  mockService.getCurrentThemeId.mockResolvedValue('chips-official.default-theme');
   mockService.applyTheme.mockResolvedValue(undefined);
   mockService.installTheme.mockResolvedValue(undefined);
   mockService.uninstallTheme.mockResolvedValue(undefined);
@@ -141,8 +145,9 @@ describe('install panels', () => {
     });
   });
 
-  it('sends packagePath when theme install succeeds', async () => {
+  it('auto installs theme package after selecting .cpk file', async () => {
     renderWithI18n(<ThemePanel />);
+    await screen.findByText('Default Theme');
     const input = document.querySelector('input[type="file"]') as HTMLInputElement | null;
     expect(input).not.toBeNull();
     if (!input) {
@@ -154,12 +159,97 @@ describe('install panels', () => {
     Object.defineProperty(input, 'files', { value: createFileList(file), configurable: true });
     fireEvent.change(input);
 
-    const button = await screen.findByTestId('theme-install-button');
-    fireEvent.click(button);
-
     await waitFor(() => {
       expect(mockService.resolveInstallPackagePath).toHaveBeenCalledTimes(1);
       expect(mockService.installTheme).toHaveBeenCalledWith('/tmp/theme.cpk', false);
+    });
+  });
+
+  it('retries install with overwrite=true when conflict is confirmed', async () => {
+    mockService.installTheme
+      .mockRejectedValueOnce({
+        code: 'PACKAGE_INSTALL_CONFLICT',
+        message: 'Theme already exists.'
+      })
+      .mockResolvedValueOnce(undefined);
+
+    renderWithI18n(<ThemePanel />);
+    await screen.findByText('Default Theme');
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement | null;
+    expect(input).not.toBeNull();
+    if (!input) {
+      return;
+    }
+
+    const file = new File(['theme'], 'theme.cpk', { type: 'application/octet-stream' });
+    Object.defineProperty(file, 'path', { value: '/tmp/theme.cpk' });
+    Object.defineProperty(input, 'files', { value: createFileList(file), configurable: true });
+    fireEvent.change(input);
+
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText('检测到同 ID 主题，是否覆盖安装？')).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByRole('button', { name: '覆盖安装' }));
+
+    await waitFor(() => {
+      expect(mockService.installTheme).toHaveBeenNthCalledWith(1, '/tmp/theme.cpk', false);
+      expect(mockService.installTheme).toHaveBeenNthCalledWith(2, '/tmp/theme.cpk', true);
+    });
+  });
+
+  it('applies selected theme from installed theme list', async () => {
+    renderWithI18n(<ThemePanel />);
+
+    const row = await screen.findByText('Ocean Theme');
+    const tr = row.closest('tr');
+    expect(tr).not.toBeNull();
+    if (!tr) {
+      return;
+    }
+
+    fireEvent.click(within(tr).getByRole('button', { name: '应用主题' }));
+
+    await waitFor(() => {
+      expect(mockService.applyTheme).toHaveBeenCalledWith('chips.theme.ocean');
+    });
+  });
+
+  it('disables delete for current/default theme and confirms delete for other themes', async () => {
+    mockService.getCurrentThemeId.mockResolvedValue('chips.theme.ocean');
+
+    renderWithI18n(<ThemePanel />);
+
+    const defaultRowText = await screen.findByText('Default Theme');
+    const defaultRow = defaultRowText.closest('tr');
+    expect(defaultRow).not.toBeNull();
+    if (!defaultRow) {
+      return;
+    }
+
+    const currentRowText = await screen.findByText('Ocean Theme');
+    const currentRow = currentRowText.closest('tr');
+    expect(currentRow).not.toBeNull();
+    if (!currentRow) {
+      return;
+    }
+
+    const darkRowText = await screen.findByText('Dark Theme');
+    const darkRow = darkRowText.closest('tr');
+    expect(darkRow).not.toBeNull();
+    if (!darkRow) {
+      return;
+    }
+
+    expect(within(defaultRow).getByRole('button', { name: '删除主题' })).toBeDisabled();
+    expect(within(currentRow).getByRole('button', { name: '删除主题' })).toBeDisabled();
+    expect(within(darkRow).getByRole('button', { name: '删除主题' })).not.toBeDisabled();
+
+    fireEvent.click(within(darkRow).getByRole('button', { name: '删除主题' }));
+    const dialog = await screen.findByRole('dialog');
+    fireEvent.click(within(dialog).getByRole('button', { name: '删除主题' }));
+
+    await waitFor(() => {
+      expect(mockService.uninstallTheme).toHaveBeenCalledWith('chips.theme.dark');
     });
   });
 });
