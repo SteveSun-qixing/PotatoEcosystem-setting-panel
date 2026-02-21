@@ -9,6 +9,7 @@ const { mockService } = vi.hoisted(() => ({
   mockService: {
     listPlugins: vi.fn(),
     checkPluginUpdates: vi.fn(),
+    resolveInstallPackagePath: vi.fn(),
     installPlugin: vi.fn(),
     setPluginEnabled: vi.fn(),
     uninstallPlugin: vi.fn(),
@@ -49,6 +50,10 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockService.listPlugins.mockResolvedValue([]);
   mockService.checkPluginUpdates.mockResolvedValue([]);
+  mockService.resolveInstallPackagePath.mockImplementation(async (file: File) => {
+    const candidate = file as File & { path?: string };
+    return candidate.path ?? '/tmp/uploaded.cpk';
+  });
   mockService.installPlugin.mockResolvedValue(undefined);
   mockService.setPluginEnabled.mockResolvedValue(undefined);
   mockService.uninstallPlugin.mockResolvedValue(undefined);
@@ -86,7 +91,27 @@ describe('install panels', () => {
     fireEvent.click(button);
 
     await waitFor(() => {
+      expect(mockService.resolveInstallPackagePath).toHaveBeenCalledTimes(1);
       expect(mockService.installPlugin).toHaveBeenCalledWith('/tmp/plugin.cpk', false);
+    });
+  });
+
+  it('falls back to persisted package path when selected file has no native path', async () => {
+    renderWithI18n(<PluginPanel />);
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement | null;
+    expect(input).not.toBeNull();
+    if (!input) {
+      return;
+    }
+
+    const file = new File(['plugin'], 'plugin.cpk', { type: 'application/octet-stream' });
+    Object.defineProperty(input, 'files', { value: createFileList(file), configurable: true });
+    fireEvent.change(input);
+    fireEvent.click(await screen.findByTestId('plugin-install-button'));
+
+    await waitFor(() => {
+      expect(mockService.resolveInstallPackagePath).toHaveBeenCalledWith(file);
+      expect(mockService.installPlugin).toHaveBeenCalledWith('/tmp/uploaded.cpk', false);
     });
   });
 
@@ -133,6 +158,7 @@ describe('install panels', () => {
     fireEvent.click(button);
 
     await waitFor(() => {
+      expect(mockService.resolveInstallPackagePath).toHaveBeenCalledTimes(1);
       expect(mockService.installTheme).toHaveBeenCalledWith('/tmp/theme.cpk', false);
     });
   });

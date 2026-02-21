@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Button, ChipsFileUpload, Input, Switch } from '@chips/component-library';
+import { Button, ChipsFileUpload, Input, Select, Switch } from '@chips/component-library';
 
 import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
 import type { ThemeOption } from '@/types';
 import { useI18n } from '@/i18n';
 import { ErrorAlert } from '@/features/shared/ErrorAlert';
 import { toDisplayError, type DisplayError } from '@/utils/error';
-import { resolvePackagePath } from '@/utils/package-file';
 
 export function ThemePanel() {
   const { t } = useI18n();
@@ -49,8 +48,7 @@ export function ThemePanel() {
   };
 
   const installTheme = async (): Promise<void> => {
-    const packagePath = resolvePackagePath(installFile);
-    if (!packagePath) {
+    if (!installFile) {
       setError({
         code: 'FILE_READ_FAILED',
         message: t('i18n.plugin.699027'),
@@ -62,6 +60,7 @@ export function ThemePanel() {
     setSaving(true);
     setError(null);
     try {
+      const packagePath = await ecosystemSettingsService.resolveInstallPackagePath(installFile);
       await ecosystemSettingsService.installTheme(packagePath, installOverwrite);
       setInstallFile(null);
       setInstallOverwrite(false);
@@ -112,13 +111,14 @@ export function ThemePanel() {
       <article className="chips-settings-card">
         <h3 className="chips-settings-card__title">{t('i18n.plugin.694004')}</h3>
         <div className="chips-settings-card__toolbar">
-          <select value={currentThemeId} onChange={(event) => setCurrentThemeId(event.target.value)}>
-            {themes.map((theme) => (
-              <option value={theme.id} key={theme.id}>
-                {theme.version ? `${theme.name} (${theme.version})` : theme.name}
-              </option>
-            ))}
-          </select>
+          <Select
+            value={currentThemeId}
+            options={themes.map((theme) => ({
+              value: theme.id,
+              label: theme.version ? `${theme.name} (${theme.version})` : theme.name
+            }))}
+            onValueChange={(value) => setCurrentThemeId(value ?? '')}
+          />
           <Button onClick={() => void applyTheme()} disabled={saving}>
             {t('i18n.plugin.694005')}
           </Button>

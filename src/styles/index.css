@@ -1,11 +1,23 @@
 :root {
-  --chips-settings-bg: var(--chips-color-surface, #f5f7fb);
-  --chips-settings-panel-bg: var(--chips-color-panel, #ffffff);
-  --chips-settings-border: var(--chips-color-border, #d5dceb);
-  --chips-settings-text: var(--chips-color-text, #1f2937);
-  --chips-settings-muted: var(--chips-color-muted, #5f6f85);
-  --chips-settings-danger: var(--chips-color-danger, #cf3d3d);
-  --chips-settings-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+  --chips-settings-bg: var(--chips-color-background, #0f172a);
+  --chips-settings-panel-bg: var(--chips-color-surface, #111824);
+  --chips-settings-panel-bg-elevated: var(--chips-color-surface-elevated, #182131);
+  --chips-settings-panel-bg-overlay: var(--chips-color-surface-overlay, #243246);
+  --chips-settings-border: var(--chips-color-border, #334560);
+  --chips-settings-border-strong: var(--chips-color-border-strong, #4b5f7e);
+  --chips-settings-text: var(--chips-color-text, #d9e1ee);
+  --chips-settings-muted: var(--chips-color-text-secondary, #91a1bb);
+  --chips-settings-muted-strong: var(--chips-color-text-muted, #687c9a);
+  --chips-settings-accent: var(--chips-color-primary, #3d79e0);
+  --chips-settings-danger: var(--chips-color-error, #ef6b7a);
+  --chips-settings-success: var(--chips-color-success, #2fcf8f);
+  --chips-settings-warning: var(--chips-color-warning, #e4b44d);
+  --chips-settings-accent-soft: var(--chips-color-primary-soft, rgba(61, 121, 224, 0.18));
+  --chips-settings-danger-soft: var(--chips-color-error-soft, rgba(239, 107, 122, 0.16));
+  --chips-settings-success-soft: var(--chips-color-success-soft, rgba(47, 207, 143, 0.16));
+  --chips-settings-shadow: var(--chips-shadow-md, 0 12px 28px rgba(1, 8, 18, 0.45));
+  --chips-settings-font-family:
+    var(--chips-font-family-base, 'IBM Plex Sans', 'Noto Sans SC', 'PingFang SC', 'Segoe UI', sans-serif);
 }
 
 * {
@@ -16,10 +28,10 @@ body {
   margin: 0;
   color: var(--chips-settings-text);
   background:
-    radial-gradient(circle at 12% 10%, rgba(28, 100, 242, 0.09) 0, transparent 30%),
-    radial-gradient(circle at 85% 15%, rgba(16, 185, 129, 0.07) 0, transparent 25%),
+    radial-gradient(circle at 12% 10%, var(--chips-settings-accent-soft) 0, transparent 30%),
+    radial-gradient(circle at 85% 15%, var(--chips-settings-success-soft) 0, transparent 25%),
     var(--chips-settings-bg);
-  font-family: 'Noto Sans SC', 'PingFang SC', 'Segoe UI', sans-serif;
+  font-family: var(--chips-settings-font-family);
 }
 
 #app {
@@ -35,7 +47,7 @@ body {
 .chips-settings-shell__sidebar {
   padding: 24px 18px;
   border-right: 1px solid var(--chips-settings-border);
-  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+  background: linear-gradient(180deg, var(--chips-settings-panel-bg) 0%, var(--chips-settings-panel-bg-elevated) 100%);
 }
 
 .chips-settings-shell__header {
@@ -72,7 +84,7 @@ body {
 
 .chips-settings-shell__menu-item--active {
   border-color: var(--chips-settings-border);
-  background: rgba(28, 100, 242, 0.08);
+  background: var(--chips-settings-accent-soft);
 }
 
 .chips-settings-shell__menu-label {
@@ -199,9 +211,9 @@ body {
 }
 
 .chips-settings-alert--error {
-  border-color: rgba(207, 61, 61, 0.25);
+  border-color: var(--chips-settings-danger);
   color: var(--chips-settings-danger);
-  background: rgba(207, 61, 61, 0.08);
+  background: var(--chips-settings-danger-soft);
 }
 
 .chips-settings-table {
@@ -219,7 +231,7 @@ body {
 }
 
 .chips-settings-table th {
-  background: rgba(31, 41, 55, 0.03);
+  background: var(--chips-settings-panel-bg-elevated);
   font-weight: 600;
 }
 
@@ -301,12 +313,12 @@ body {
 }
 
 .chips-settings-status--ok {
-  background: rgba(16, 185, 129, 0.14);
-  color: #077857;
+  background: var(--chips-settings-success-soft);
+  color: var(--chips-settings-success);
 }
 
 .chips-settings-status--error {
-  background: rgba(207, 61, 61, 0.14);
+  background: var(--chips-settings-danger-soft);
   color: var(--chips-settings-danger);
 }
 
@@ -314,8 +326,8 @@ body {
   margin-top: 12px;
   border: 1px solid var(--chips-settings-border);
   border-radius: 8px;
-  background: #0f172a;
-  color: #d6deeb;
+  background: var(--chips-settings-panel-bg-overlay);
+  color: var(--chips-settings-text);
   max-height: 240px;
   overflow: auto;
 }
@@ -337,7 +349,7 @@ body {
 .chips-settings-details summary {
   cursor: pointer;
   font-size: 13px;
-  color: var(--chips-settings-muted);
+  color: var(--chips-settings-muted-strong);
 }
 
 .chips-settings-details pre {
@@ -352,16 +364,16 @@ body {
   padding: 16px;
   min-height: 48px;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--chips-settings-panel-bg-elevated);
 }
 
 .chips-file-upload--dragging .chips-file-upload__dropzone {
-  border-color: #1c64f2;
-  background: rgba(28, 100, 242, 0.08);
+  border-color: var(--chips-settings-accent);
+  background: var(--chips-settings-accent-soft);
 }
 
 .chips-file-upload--invalid .chips-file-upload__dropzone {
-  border-color: rgba(207, 61, 61, 0.35);
+  border-color: var(--chips-settings-danger);
 }
 
 .chips-file-upload__input {
@@ -378,9 +390,9 @@ body {
 .chips-settings-bootstrap-error {
   margin: 48px auto;
   max-width: 540px;
-  border: 1px solid rgba(207, 61, 61, 0.2);
+  border: 1px solid var(--chips-settings-danger);
   border-radius: 12px;
-  background: #fff;
+  background: var(--chips-settings-panel-bg);
   padding: 20px;
   box-shadow: var(--chips-settings-shadow);
 }
@@ -401,7 +413,7 @@ body {
   margin: 0;
   padding: 10px;
   border-radius: 8px;
-  background: rgba(207, 61, 61, 0.08);
+  background: var(--chips-settings-danger-soft);
   color: var(--chips-settings-danger);
   font-size: 12px;
 }

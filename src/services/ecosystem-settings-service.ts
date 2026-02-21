@@ -10,6 +10,11 @@ import type {
   WorkspaceExchangePolicy
 } from '@/types';
 import { DEFAULT_THEME_ID } from '@/constants/theme';
+import {
+  applyThemeCssLayers,
+  normalizeThemeCssLayers,
+  type ThemeCssLayerMap
+} from '@/utils/theme-style';
 
 import { invokeBridge, invokeFirstSuccessful, isRouteMissingError } from './bridge-client';
 
@@ -52,6 +57,10 @@ interface ThemeCurrentResponse {
   id?: string;
   themeId?: string;
   name?: string;
+}
+
+interface ThemeAllCssResponse {
+  css?: Record<string, unknown>;
 }
 
 interface ConfigGetResponse {
@@ -103,6 +112,39 @@ const DEFAULT_SETTINGS: GeneralSettings = {
   autoStart: true,
   allowExternalLinks: false
 };
+
+function normalizePathFragment(input: string): string {
+  return input.replace(/\\/g, '/').replace(/\/+$/, '');
+}
+
+function joinPortablePath(...segments: string[]): string {
+  const normalized = segments
+    .map((segment) => normalizePathFragment(segment))
+    .filter((segment) => segment.length > 0);
+
+  if (normalized.length === 0) {
+    return '';
+  }
+
+  const [head, ...rest] = normalized;
+  return [head, ...rest.map((segment) => segment.replace(/^\/+/, ''))].join('/');
+}
+
+function sanitizeFileName(fileName: string): string {
+  const safe = fileName.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+  return safe.length > 0 ? safe : 'package.cpk';
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  const chunkSize = 0x8000;
+  for (let index = 0; index < bytes.length; index += chunkSize) {
+    const chunk = bytes.subarray(index, index + chunkSize);
+    binary += String.fromCharCode(...chunk);
+  }
+  return btoa(binary);
+}
 
 function asString(value: unknown, fallback = ''): string {
   return typeof value === 'string' ? value : fallback;
@@ -174,6 +216,50 @@ function normalizeRuntimeOverview(payload: SysStatusResponse | LegacySystemStatu
 }
 
 export class EcosystemSettingsService {
+  public async resolveInstallPackagePath(file: File): Promise<string> {
+    const candidate = file as File & { path?: string };
+    if (typeof candidate.path === 'string' && candidate.path.length > 0) {
+      return candidate.path;
+    }
+
+    if (!file.name.toLowerCase().endsWith('.cpk')) {
+      throw {
+        code: 'PACKAGE_EXTENSION_INVALID',
+        message: 'Only .cpk package files are supported.'
+      };
+    }
+
+    const workspacePath = (await this.getWorkspacePath()).trim();
+    const rootDir = workspacePath.length > 0 ? workspacePath : '/tmp';
+    const uploadsDir = joinPortablePath(rootDir, '.chips', 'cache', 'package-uploads');
+    const targetPath = joinPortablePath(
+      uploadsDir,
+      `${Date.now()}-${Math.random().toString(16).slice(2)}-${sanitizeFileName(file.name)}`
+    );
+
+    try {
+      const binary = await file.arrayBuffer();
+      const content = arrayBufferToBase64(binary);
+      await invokeBridge('file', 'write', {
+        path: targetPath,
+        content,
+        encoding: 'base64',
+        overwrite: true,
+        createDirs: true
+      });
+      return targetPath;
+    } catch (error: unknown) {
+      throw {
+        code: 'FILE_READ_FAILED',
+        message: 'Unable to persist selected package file.',
+        details: {
+          fileName: file.name,
+          cause: error instanceof Error ? error.message : String(error)
+        }
+      };
+    }
+  }
+
   public async getRuntimeOverview(): Promise<RuntimeOverview> {
     const response = await invokeFirstSuccessful<SysStatusResponse | LegacySystemStatusResponse>([
       { namespace: 'runtime', action: 'status', params: {} },
@@ -549,14 +635,15 @@ export class EcosystemSettingsService {
   public async applyTheme(themeId: string): Promise<void> {
     try {
       await invokeBridge('theme', 'apply', { id: themeId });
-      return;
     } catch (error: unknown) {
       if (!isRouteMissingError(error)) {
         throw error;
       }
+
+      await this.setConfigValue(CONFIG_KEYS.themeGlobal, themeId);
     }
 
-    await this.setConfigValue(CONFIG_KEYS.themeGlobal, themeId);
+    await this.refreshThemeCss();
   }
 
   public async installTheme(packagePath: string, overwrite: boolean): Promise<void> {
@@ -579,6 +666,15 @@ export class EcosystemSettingsService {
         params: { id: themeId }
       }
     ]);
+
+    await this.refreshThemeCss();
+  }
+
+  public async refreshThemeCss(): Promise<ThemeCssLayerMap> {
+    const response = await invokeBridge<ThemeAllCssResponse>('theme', 'getAllCss', {});
+    const layers = normalizeThemeCssLayers(response.css);
+    applyThemeCssLayers(layers);
+    return layers;
   }
 
   public async getBundleStatus(): Promise<BundleStatus> {

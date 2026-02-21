@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Input } from '@chips/component-library';
+import { Button, Input, Select } from '@chips/component-library';
 
 import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
 import type { WorkspaceExchangePolicy } from '@/types';
@@ -95,40 +95,35 @@ export function FileSystemPanel() {
       <article className="chips-settings-card">
         <h3 className="chips-settings-card__title">{t('i18n.plugin.696007')}</h3>
         <div className="chips-settings-card__toolbar">
-          <label>
-            {t('i18n.plugin.696008')}
-            <select
-              value={policy.mode}
-              onChange={(event) =>
-                setPolicy((current) => ({
-                  ...current,
-                  mode: event.target.value === 'link' ? 'link' : 'copy'
-                }))
-              }
-            >
-              <option value="copy">copy</option>
-              <option value="link">link</option>
-            </select>
-          </label>
-          <label>
-            {t('i18n.plugin.696009')}
-            <select
-              value={policy.conflict}
-              onChange={(event) =>
-                setPolicy((current) => ({
-                  ...current,
-                  conflict:
-                    event.target.value === 'overwrite' || event.target.value === 'skip'
-                      ? event.target.value
-                      : 'rename'
-                }))
-              }
-            >
-              <option value="rename">rename</option>
-              <option value="skip">skip</option>
-              <option value="overwrite">overwrite</option>
-            </select>
-          </label>
+          <Select
+            label={t('i18n.plugin.696008')}
+            value={policy.mode}
+            options={[
+              { value: 'copy', label: 'copy' },
+              { value: 'link', label: 'link' }
+            ]}
+            onValueChange={(value) =>
+              setPolicy((current) => ({
+                ...current,
+                mode: value === 'link' ? 'link' : 'copy'
+              }))
+            }
+          />
+          <Select
+            label={t('i18n.plugin.696009')}
+            value={policy.conflict}
+            options={[
+              { value: 'rename', label: 'rename' },
+              { value: 'skip', label: 'skip' },
+              { value: 'overwrite', label: 'overwrite' }
+            ]}
+            onValueChange={(value) =>
+              setPolicy((current) => ({
+                ...current,
+                conflict: value === 'overwrite' || value === 'skip' ? value : 'rename'
+              }))
+            }
+          />
           <Button onClick={() => void savePolicy()} disabled={saving}>
             {t('i18n.plugin.696010')}
           </Button>
