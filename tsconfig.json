@@ -12,7 +12,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
 
     /* Linting */
     "strict": true,
@@ -33,6 +33,18 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "include": [
+    "src/main.tsx",
+    "src/**/*.tsx",
+    "src/services/**/*.ts",
+    "src/types/**/*.ts",
+    "src/locales/**/*.ts",
+    "src/i18n/**/*.ts",
+    "src/utils/**/*.ts",
+    "src/constants/**/*.ts",
+    "src/**/*.d.ts",
+    "tests/react/**/*.ts",
+    "tests/react/**/*.tsx"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

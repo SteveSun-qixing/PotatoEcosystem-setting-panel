@@ -152,7 +152,11 @@ export const enUS = {
       '699020': 'Card and Box Bundle',
       '699021': 'Bundle maintenance',
       '699022': 'File System',
-      '699023': 'Workspace and exchange policy'
+      '699023': 'Workspace and exchange policy',
+      '699024': 'Technical error code: {code}',
+      '699025': 'Raw message: {raw}',
+      '699026': 'Only .cpk packages are allowed. Drag and drop or click to choose.',
+      '699027': 'Cannot resolve local package path in current runtime. Use file picker inside Host.'
     }
   }
 } as const;
