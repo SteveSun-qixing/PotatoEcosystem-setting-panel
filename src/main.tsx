@@ -13,7 +13,7 @@ function Bootstrap() {
 
   useEffect(() => {
     let active = true;
-    ecosystemSettingsService
+    const localeTask = ecosystemSettingsService
       .getCurrentLocale()
       .then((nextLocale) => {
         if (active) {
@@ -24,12 +24,15 @@ function Bootstrap() {
         if (active) {
           setBootError(error instanceof Error ? error.message : String(error));
         }
-      })
-      .finally(() => {
-        if (active) {
-          setReady(true);
-        }
       });
+
+    const themeTask = ecosystemSettingsService.refreshThemeCss().catch(() => undefined);
+
+    Promise.allSettled([localeTask, themeTask]).finally(() => {
+      if (active) {
+        setReady(true);
+      }
+    });
 
     return () => {
       active = false;

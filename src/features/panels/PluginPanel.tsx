@@ -6,7 +6,6 @@ import type { PluginRecord } from '@/types';
 import { useI18n } from '@/i18n';
 import { ErrorAlert } from '@/features/shared/ErrorAlert';
 import { toDisplayError, type DisplayError } from '@/utils/error';
-import { resolvePackagePath } from '@/utils/package-file';
 
 export function PluginPanel() {
   const { t } = useI18n();
@@ -40,8 +39,7 @@ export function PluginPanel() {
   };
 
   const install = async (): Promise<void> => {
-    const packagePath = resolvePackagePath(installFile);
-    if (!packagePath) {
+    if (!installFile) {
       setError({
         code: 'FILE_READ_FAILED',
         message: t('i18n.plugin.699027'),
@@ -53,6 +51,7 @@ export function PluginPanel() {
     setInstallPending(true);
     setError(null);
     try {
+      const packagePath = await ecosystemSettingsService.resolveInstallPackagePath(installFile);
       await ecosystemSettingsService.installPlugin(packagePath, forceInstall);
       setInstallFile(null);
       setForceInstall(false);

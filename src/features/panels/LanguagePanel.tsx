@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Input } from '@chips/component-library';
+import { Button, Input, Select } from '@chips/component-library';
 
 import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
 import { useI18n } from '@/i18n';
@@ -87,13 +87,11 @@ export function LanguagePanel({ onLocaleCommitted }: LanguagePanelProps) {
       <article className="chips-settings-card">
         <h3 className="chips-settings-card__title">{t('i18n.plugin.693004')}</h3>
         <div className="chips-settings-card__toolbar">
-          <select value={locale} onChange={(event) => setLocale(event.target.value)}>
-            {locales.map((item) => (
-              <option value={item} key={item}>
-                {item}
-              </option>
-            ))}
-          </select>
+          <Select
+            value={locale}
+            options={locales.map((item) => ({ value: item, label: item }))}
+            onValueChange={(value) => setLocale(value ?? '')}
+          />
           <Button onClick={() => void saveLocale()} disabled={saving}>
             {t('i18n.plugin.693005')}
           </Button>
@@ -115,6 +113,7 @@ export function LanguagePanel({ onLocaleCommitted }: LanguagePanelProps) {
           <label className="chips-settings-form__field">
             <span className="chips-settings-form__label">{t('i18n.plugin.693009')}</span>
             <textarea
+              className="chips-textarea"
               value={entriesRaw}
               onChange={(event) => setEntriesRaw(event.target.value)}
               placeholder={t('i18n.plugin.693010')}
