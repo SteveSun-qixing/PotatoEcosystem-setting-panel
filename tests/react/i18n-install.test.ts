@@ -4,7 +4,36 @@ import { enUS } from '@/locales/en-US';
 import { jaJP } from '@/locales/ja-JP';
 import { zhCN } from '@/locales/zh-CN';
 
-const installKeys = ['699024', '699025', '699026', '699027', '691004', '694006', '691007', '694009'] as const;
+const installKeys = [
+  '699024',
+  '699025',
+  '699026',
+  '699027',
+  '691004',
+  '694006',
+  '691007',
+  '694009',
+  '694013',
+  '694014',
+  '694015',
+  '694016',
+  '694017',
+  '694018',
+  '694019',
+  '694020',
+  '694021',
+  '694022',
+  '694023',
+  '694024',
+  '694025',
+  '694026',
+  '694027',
+  '694028',
+  '694029',
+  '694030',
+  '694031',
+  '694032'
+] as const;
 
 describe('install i18n keys', () => {
   it('provides install-related copy in zh/en/ja locales', () => {
