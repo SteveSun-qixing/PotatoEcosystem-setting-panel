@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Input, Select } from '@chips/component-library';
+import { Button, Input, Select, Textarea } from '@chips/component-library';
 
 import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
 import { useI18n } from '@/i18n';
@@ -101,25 +101,21 @@ export function LanguagePanel({ onLocaleCommitted }: LanguagePanelProps) {
       <article className="chips-settings-card">
         <h3 className="chips-settings-card__title">{t('i18n.plugin.693006')}</h3>
         <div className="chips-settings-form">
-          <label className="chips-settings-form__field">
-            <span className="chips-settings-form__label">{t('i18n.plugin.693007')}</span>
-            <Input
-              aria-label="dictionary-plugin-id"
-              value={pluginId}
-              onChange={(event) => setPluginId(event.target.value)}
-              placeholder={t('i18n.plugin.693008')}
-            />
-          </label>
-          <label className="chips-settings-form__field">
-            <span className="chips-settings-form__label">{t('i18n.plugin.693009')}</span>
-            <textarea
-              className="chips-textarea"
-              value={entriesRaw}
-              onChange={(event) => setEntriesRaw(event.target.value)}
-              placeholder={t('i18n.plugin.693010')}
-              rows={8}
-            />
-          </label>
+          <Input
+            label={t('i18n.plugin.693007')}
+            aria-label={t('i18n.plugin.693007')}
+            value={pluginId}
+            onChange={(event) => setPluginId(event.target.value)}
+            placeholder={t('i18n.plugin.693008')}
+          />
+          <Textarea
+            label={t('i18n.plugin.693009')}
+            aria-label={t('i18n.plugin.693009')}
+            value={entriesRaw}
+            onChange={(event) => setEntriesRaw(event.target.value)}
+            placeholder={t('i18n.plugin.693010')}
+            rows={8}
+          />
           <div className="chips-settings-panel__actions">
             <Button onClick={() => void updateDictionary()} disabled={saving}>
               {t('i18n.plugin.693011')}
