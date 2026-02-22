@@ -1,10 +1,40 @@
-import { useEffect, useState } from 'react';
-import { Button, Input, Select, Textarea } from '@chips/component-library';
+import { useEffect, useId, useState, type ComponentType, type TextareaHTMLAttributes } from 'react';
+import * as ChipsComponentLibrary from '@chips/component-library';
 
 import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
 import { useI18n } from '@/i18n';
 import { ErrorAlert } from '@/features/shared/ErrorAlert';
 import { toDisplayError, type DisplayError } from '@/utils/error';
+
+const { Button, Input, Select } = ChipsComponentLibrary;
+
+type ChipsTextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  label?: string;
+  helperText?: string;
+  errorText?: string;
+  invalid?: boolean;
+  chipsScope?: string;
+};
+
+const ChipsTextarea = (ChipsComponentLibrary as { Textarea?: ComponentType<ChipsTextareaProps> }).Textarea;
+
+function FallbackTextarea({ label, chipsScope = 'textarea', className, id, ...props }: ChipsTextareaProps) {
+  const generatedId = useId();
+  const controlId = id ?? generatedId;
+
+  return (
+    <div className="chips-settings-form__field" data-scope={chipsScope} data-part="root">
+      {label ? (
+        <label className="chips-settings-form__label" htmlFor={controlId}>
+          {label}
+        </label>
+      ) : null}
+      <textarea {...props} id={controlId} className={['chips-settings-fallback-textarea', className].filter(Boolean).join(' ')} />
+    </div>
+  );
+}
+
+const TextareaField = ChipsTextarea ?? FallbackTextarea;
 
 interface LanguagePanelProps {
   onLocaleCommitted: (locale: string) => void;
@@ -108,7 +138,7 @@ export function LanguagePanel({ onLocaleCommitted }: LanguagePanelProps) {
             onChange={(event) => setPluginId(event.target.value)}
             placeholder={t('i18n.plugin.693008')}
           />
-          <Textarea
+          <TextareaField
             label={t('i18n.plugin.693009')}
             aria-label={t('i18n.plugin.693009')}
             value={entriesRaw}

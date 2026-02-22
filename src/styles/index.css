@@ -287,6 +287,23 @@ body {
   color: var(--chips-settings-muted);
 }
 
+.chips-settings-fallback-textarea {
+  width: 100%;
+  min-height: 112px;
+  border: 1px solid var(--chips-settings-border);
+  border-radius: 10px;
+  background: var(--chips-settings-panel-bg-elevated);
+  color: var(--chips-settings-text);
+  padding: 10px 12px;
+  font: inherit;
+  resize: vertical;
+}
+
+.chips-settings-fallback-textarea:focus-visible {
+  outline: 2px solid var(--chips-settings-accent);
+  outline-offset: 1px;
+}
+
 .chips-settings-form__field--switch {
   align-items: center;
   grid-template-columns: 1fr auto;
