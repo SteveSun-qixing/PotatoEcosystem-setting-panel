@@ -39,6 +39,7 @@ export const enUS = {
       '690032': 'Generate Report',
       '690033': 'No logs available',
       '690034': 'View report JSON',
+      '690035': 'Failed to load logs: {message}',
 
       '691001': 'Plugin Management',
       '691002': 'Install, enable/disable, uninstall plugins and inspect metadata.',

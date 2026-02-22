@@ -199,6 +199,9 @@ onMounted(async () => {
 
       <article class="chips-settings-card chips-settings-card--full">
         <h3 class="chips-settings-card__title">{{ t('i18n.plugin.690029') }}</h3>
+        <div v-if="overviewStore.logsError" class="chips-settings-alert chips-settings-alert--error">
+          {{ t('i18n.plugin.690035', { message: overviewStore.logsError }) }}
+        </div>
         <div class="chips-settings-card__toolbar">
           <ChipsSelect
             :model-value="logLevel"
