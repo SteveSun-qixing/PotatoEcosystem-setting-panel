@@ -172,7 +172,7 @@ export function OverviewPanel() {
           </p>
           <div className="chips-settings-card__toolbar">
             <Input
-              aria-label="restart-reason"
+              aria-label={t('i18n.plugin.690021')}
               value={restartReason}
               onChange={(event) => setRestartReason(event.target.value)}
               placeholder={t('i18n.plugin.690021')}
@@ -215,7 +215,7 @@ export function OverviewPanel() {
         <h3 className="chips-settings-card__title">{t('i18n.plugin.690029')}</h3>
         <div className="chips-settings-card__toolbar">
           <Input
-            aria-label="log-query"
+            aria-label={t('i18n.plugin.690030')}
             value={logQuery}
             onChange={(event) => setLogQuery(event.target.value)}
             placeholder={t('i18n.plugin.690030')}

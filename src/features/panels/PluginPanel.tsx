@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Button, ChipsFileUpload, Switch } from '@chips/component-library';
+import { Button, ChipsFileUpload, Dialog, Switch } from '@chips/component-library';
 
 import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
 import type { PluginRecord } from '@/types';
@@ -13,6 +13,7 @@ export function PluginPanel() {
   const [updates, setUpdates] = useState<Array<Record<string, unknown>>>([]);
   const [installFile, setInstallFile] = useState<File | null>(null);
   const [forceInstall, setForceInstall] = useState(false);
+  const [pluginPendingRemoval, setPluginPendingRemoval] = useState<PluginRecord | null>(null);
   const [loading, setLoading] = useState(false);
   const [installPending, setInstallPending] = useState(false);
   const [updatePending, setUpdatePending] = useState(false);
@@ -78,16 +79,21 @@ export function PluginPanel() {
     }
   };
 
-  const uninstall = async (plugin: PluginRecord): Promise<void> => {
-    setBusyPluginIds((current) => [...new Set([...current, plugin.id])]);
+  const uninstall = async (): Promise<void> => {
+    if (!pluginPendingRemoval) {
+      return;
+    }
+
+    setBusyPluginIds((current) => [...new Set([...current, pluginPendingRemoval.id])]);
     setError(null);
     try {
-      await ecosystemSettingsService.uninstallPlugin(plugin);
+      await ecosystemSettingsService.uninstallPlugin(pluginPendingRemoval);
+      setPluginPendingRemoval(null);
       await refresh();
     } catch (reason: unknown) {
       setError(toDisplayError(reason));
     } finally {
-      setBusyPluginIds((current) => current.filter((item) => item !== plugin.id));
+      setBusyPluginIds((current) => current.filter((item) => item !== pluginPendingRemoval.id));
     }
   };
 
@@ -194,7 +200,10 @@ export function PluginPanel() {
                   >
                     {plugin.enabled ? t('i18n.plugin.691014') : t('i18n.plugin.691015')}
                   </Switch>
-                  <Button onClick={() => void uninstall(plugin)} disabled={busyPluginIds.includes(plugin.id)}>
+                  <Button
+                    onClick={() => setPluginPendingRemoval(plugin)}
+                    disabled={busyPluginIds.includes(plugin.id)}
+                  >
                     {t('i18n.plugin.691016')}
                   </Button>
                 </td>
@@ -210,6 +219,25 @@ export function PluginPanel() {
           </tbody>
         </table>
       </article>
+
+      {pluginPendingRemoval ? (
+        <Dialog
+          defaultOpen
+          className="chips-settings-confirm-dialog"
+          onOpenChange={(open) => {
+            if (!open) {
+              setPluginPendingRemoval(null);
+            }
+          }}
+          title={t('i18n.plugin.691018')}
+          description={t('i18n.plugin.691019', { plugin: pluginPendingRemoval.name })}
+        >
+          <div className="chips-settings-dialog-actions">
+            <Button onClick={() => setPluginPendingRemoval(null)}>{t('i18n.core.000002')}</Button>
+            <Button onClick={() => void uninstall()}>{t('i18n.plugin.691016')}</Button>
+          </div>
+        </Dialog>
+      ) : null}
     </section>
   );
 }

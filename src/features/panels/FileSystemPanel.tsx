@@ -81,7 +81,7 @@ export function FileSystemPanel() {
         <h3 className="chips-settings-card__title">{t('i18n.plugin.696004')}</h3>
         <div className="chips-settings-card__toolbar">
           <Input
-            aria-label="workspace-path"
+            aria-label={t('i18n.plugin.696004')}
             value={workspacePath}
             onChange={(event) => setWorkspacePath(event.target.value)}
             placeholder={t('i18n.plugin.696005')}
@@ -99,8 +99,8 @@ export function FileSystemPanel() {
             label={t('i18n.plugin.696008')}
             value={policy.mode}
             options={[
-              { value: 'copy', label: 'copy' },
-              { value: 'link', label: 'link' }
+              { value: 'copy', label: t('i18n.plugin.696011') },
+              { value: 'link', label: t('i18n.plugin.696012') }
             ]}
             onValueChange={(value) =>
               setPolicy((current) => ({
@@ -113,9 +113,9 @@ export function FileSystemPanel() {
             label={t('i18n.plugin.696009')}
             value={policy.conflict}
             options={[
-              { value: 'rename', label: 'rename' },
-              { value: 'skip', label: 'skip' },
-              { value: 'overwrite', label: 'overwrite' }
+              { value: 'rename', label: t('i18n.plugin.696013') },
+              { value: 'skip', label: t('i18n.plugin.696014') },
+              { value: 'overwrite', label: t('i18n.plugin.696015') }
             ]}
             onValueChange={(value) =>
               setPolicy((current) => ({

@@ -66,7 +66,9 @@ export function App({ onLocaleCommitted }: AppProps) {
           {menuItems.map((item) => (
             <Button
               key={item.id}
+              type="button"
               className={`chips-settings-shell__menu-item ${activeSection === item.id ? 'chips-settings-shell__menu-item--active' : ''}`}
+              aria-current={activeSection === item.id ? 'page' : undefined}
               onClick={() => setActiveSection(item.id)}
             >
               <span className="chips-settings-shell__menu-label">{item.label}</span>
