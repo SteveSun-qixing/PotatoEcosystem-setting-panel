@@ -12,6 +12,7 @@ interface OverviewState {
   restarting: boolean;
   changingState: boolean;
   error: string;
+  logsError: string;
   lastUpdatedAt: string;
 }
 
@@ -25,6 +26,7 @@ export const useOverviewStore = defineStore('overview', {
     restarting: false,
     changingState: false,
     error: '',
+    logsError: '',
     lastUpdatedAt: ''
   }),
 
@@ -50,7 +52,7 @@ export const useOverviewStore = defineStore('overview', {
     },
 
     async refreshLogs(level?: 'debug' | 'info' | 'warn' | 'error', query?: string): Promise<void> {
-      this.error = '';
+      this.logsError = '';
 
       try {
         this.logs = await ecosystemSettingsService.queryRuntimeLogs({
@@ -59,7 +61,7 @@ export const useOverviewStore = defineStore('overview', {
           limit: 50
         });
       } catch (error: unknown) {
-        this.error = error instanceof Error ? error.message : String(error);
+        this.logsError = error instanceof Error ? error.message : String(error);
       }
     },
 
