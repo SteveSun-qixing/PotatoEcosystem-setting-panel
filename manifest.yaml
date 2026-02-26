@@ -21,6 +21,7 @@ permissions:
   - config.read
   - config.write
   - theme.read
+  - theme.write
   - i18n.read
   - i18n.write
 
