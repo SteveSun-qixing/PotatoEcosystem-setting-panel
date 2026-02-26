@@ -16,7 +16,7 @@ import {
   type ThemeCssLayerMap
 } from '@/utils/theme-style';
 
-import { invokeBridge, invokeFirstSuccessful, isRouteMissingError } from './bridge-client';
+import { runtimeGateway } from './runtime-gateway';
 
 interface SysStatusResponse {
   host?: {
@@ -39,12 +39,6 @@ interface SysStatusResponse {
   } | null;
 }
 
-interface LegacySystemStatusResponse {
-  uptime?: number;
-  loaded_modules?: number;
-  active_connections?: number;
-}
-
 interface PluginListResponse {
   plugins?: Array<Record<string, unknown>>;
 }
@@ -61,10 +55,6 @@ interface ThemeCurrentResponse {
 
 interface ThemeAllCssResponse {
   css?: Record<string, unknown>;
-}
-
-interface ConfigGetResponse {
-  value?: unknown;
 }
 
 interface ConfigListResponse {
@@ -101,8 +91,7 @@ const CONFIG_KEYS = {
   pluginEnabledPrefix: 'ecosystem.settings.plugin.enabled.',
   workspaceRootPath: 'workspace.rootPath',
   workspaceExchangeMode: 'workspace.exchange.mode',
-  workspaceExchangeConflict: 'workspace.exchange.conflict',
-  themeGlobal: 'theme.global'
+  workspaceExchangeConflict: 'workspace.exchange.conflict'
 } as const;
 
 const DEFAULT_SETTINGS: GeneralSettings = {
@@ -112,6 +101,21 @@ const DEFAULT_SETTINGS: GeneralSettings = {
   autoStart: true,
   allowExternalLinks: false
 };
+
+const DEFAULT_LOCALES = [
+  'zh-CN',
+  'zh-TW',
+  'en-US',
+  'es-ES',
+  'fr-FR',
+  'de-DE',
+  'ja-JP',
+  'ko-KR',
+  'pt-PT',
+  'pt-BR',
+  'ru-RU',
+  'it-IT'
+] as const;
 
 function normalizePathFragment(input: string): string {
   return input.replace(/\\/g, '/').replace(/\/+$/, '');
@@ -181,37 +185,20 @@ function mapPluginRecord(raw: Record<string, unknown>): PluginRecord {
   };
 }
 
-function normalizeRuntimeOverview(payload: SysStatusResponse | LegacySystemStatusResponse): RuntimeOverview {
-  if ('host' in payload || 'kernel' in payload) {
-    const current = payload as SysStatusResponse;
-    const namespaces = current.kernel?.namespaces ?? [];
+function normalizeRuntimeOverview(payload: SysStatusResponse): RuntimeOverview {
+  const namespaces = payload.kernel?.namespaces ?? [];
 
-    return {
-      hostVersion: asString(current.host?.version, 'unknown'),
-      hostPid: asNumber(current.host?.pid),
-      uptimeMs: asNumber(current.host?.uptimeMs),
-      platform: asString(current.host?.platform, 'unknown'),
-      nodeVersion: asString(current.host?.nodeVersion, 'unknown'),
-      routeCount: asNumber(current.kernel?.routes),
-      namespaceCount: namespaces.length,
-      p95LatencyMs: asNumber(current.kernel?.routerMetrics?.p95LatencyMs),
-      errorCount: asNumber(current.kernel?.routerMetrics?.errorCount),
-      controlPlaneOnline: current.controlPlane?.listening === true
-    };
-  }
-
-  const legacy = payload as LegacySystemStatusResponse;
   return {
-    hostVersion: 'legacy',
-    hostPid: 0,
-    uptimeMs: asNumber(legacy.uptime) * 1000,
-    platform: 'unknown',
-    nodeVersion: 'unknown',
-    routeCount: asNumber(legacy.loaded_modules),
-    namespaceCount: asNumber(legacy.active_connections),
-    p95LatencyMs: 0,
-    errorCount: 0,
-    controlPlaneOnline: false
+    hostVersion: asString(payload.host?.version, 'unknown'),
+    hostPid: asNumber(payload.host?.pid),
+    uptimeMs: asNumber(payload.host?.uptimeMs),
+    platform: asString(payload.host?.platform, 'unknown'),
+    nodeVersion: asString(payload.host?.nodeVersion, 'unknown'),
+    routeCount: asNumber(payload.kernel?.routes),
+    namespaceCount: namespaces.length,
+    p95LatencyMs: asNumber(payload.kernel?.routerMetrics?.p95LatencyMs),
+    errorCount: asNumber(payload.kernel?.routerMetrics?.errorCount),
+    controlPlaneOnline: payload.controlPlane?.listening === true
   };
 }
 
@@ -240,7 +227,7 @@ export class EcosystemSettingsService {
     try {
       const binary = await file.arrayBuffer();
       const content = arrayBufferToBase64(binary);
-      await invokeBridge('file', 'write', {
+      await runtimeGateway.invoke('file', 'write', {
         path: targetPath,
         content,
         encoding: 'base64',
@@ -261,146 +248,52 @@ export class EcosystemSettingsService {
   }
 
   public async getRuntimeOverview(): Promise<RuntimeOverview> {
-    const response = await invokeFirstSuccessful<SysStatusResponse | LegacySystemStatusResponse>([
-      { namespace: 'runtime', action: 'status', params: {} },
-      { namespace: 'sys', action: 'status', params: {} },
-      { namespace: 'system', action: 'status', params: {} }
-    ]);
-
+    const response = await runtimeGateway.invoke<SysStatusResponse>('runtime', 'status', {});
     return normalizeRuntimeOverview(response);
   }
 
   public async getRuntimeHealth(): Promise<RuntimeHealthSnapshot> {
-    try {
-      const response = await invokeBridge<RuntimeHealthResponse>('runtime', 'health', {});
-      return {
-        healthy: asBoolean(response.healthy, false),
-        checks: (response.checks ?? []).map((item) => ({
-          id: asString(item.id, 'unknown'),
-          healthy: asBoolean(item.healthy, false),
-          message: asString(item.message, '')
-        }))
-      };
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
-
-      const overview = await this.getRuntimeOverview();
-      return {
-        healthy: overview.routeCount > 0,
-        checks: [
-          {
-            id: 'runtime.status',
-            healthy: overview.routeCount > 0,
-            message: overview.routeCount > 0 ? 'Runtime status route is available.' : 'Runtime status route unavailable.'
-          }
-        ]
-      };
-    }
+    const response = await runtimeGateway.invoke<RuntimeHealthResponse>('runtime', 'health', {});
+    return {
+      healthy: asBoolean(response.healthy, false),
+      checks: (response.checks ?? []).map((item) => ({
+        id: asString(item.id, 'unknown'),
+        healthy: asBoolean(item.healthy, false),
+        message: asString(item.message, '')
+      }))
+    };
   }
 
   public async queryRuntimeLogs(params: RuntimeLogQueryParams): Promise<RuntimeLogQueryResult> {
-    try {
-      const response = await invokeBridge<RuntimeLogResponse>('runtime', 'log.query', params);
-      const logs = response.logs ?? response.items ?? [];
-      return {
-        logs,
-        total: asNumber(response.total, logs.length)
-      };
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
+    const response = await runtimeGateway.invoke<RuntimeLogResponse>('runtime', 'log.query', params);
+    const logs = response.logs ?? response.items ?? [];
 
-      const fallback = await invokeBridge<RuntimeLogResponse>('log', 'query', {
-        level: params.level,
-        query: params.query,
-        limit: params.limit
-      });
-      const logs = fallback.items ?? fallback.logs ?? [];
-      return {
-        logs,
-        total: logs.length
-      };
-    }
+    return {
+      logs,
+      total: asNumber(response.total, logs.length)
+    };
   }
 
   public async exportRuntimeReport(): Promise<Record<string, unknown>> {
-    try {
-      return await invokeBridge<Record<string, unknown>>('runtime', 'report.export', {});
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
-
-      const [status, health, logs] = await Promise.all([
-        this.getRuntimeOverview(),
-        this.getRuntimeHealth(),
-        this.queryRuntimeLogs({ limit: 50 })
-      ]);
-
-      return {
-        generatedAt: new Date().toISOString(),
-        status,
-        health,
-        logs
-      };
-    }
+    return runtimeGateway.invoke<Record<string, unknown>>('runtime', 'report.export', {});
   }
 
   public async restartHost(reason: string): Promise<void> {
-    await invokeFirstSuccessful([
-      { namespace: 'runtime', action: 'restart', params: { reason } },
-      { namespace: 'sys', action: 'restart', params: { reason } }
-    ]);
+    await runtimeGateway.invoke('runtime', 'restart', { reason });
   }
 
   public async startHost(): Promise<RuntimeLifecycleResponse> {
-    try {
-      return await invokeBridge<RuntimeLifecycleResponse>('runtime', 'start', {});
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
-
-      return {
-        accepted: true,
-        state: 'running',
-        requestedAt: new Date().toISOString()
-      };
-    }
+    return runtimeGateway.invoke<RuntimeLifecycleResponse>('runtime', 'start', {});
   }
 
   public async stopHost(): Promise<RuntimeLifecycleResponse> {
-    try {
-      return await invokeBridge<RuntimeLifecycleResponse>('runtime', 'stop', {});
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
-
-      return {
-        accepted: true,
-        state: 'stopped',
-        requestedAt: new Date().toISOString()
-      };
-    }
+    return runtimeGateway.invoke<RuntimeLifecycleResponse>('runtime', 'stop', {});
   }
 
   public async listPlugins(): Promise<PluginRecord[]> {
-    const response = await invokeFirstSuccessful<PluginListResponse>([
-      {
-        namespace: 'plugin',
-        action: 'list',
-        params: { includeManifest: false }
-      },
-      {
-        namespace: 'plugin',
-        action: 'list',
-        params: {}
-      }
-    ]);
+    const response = await runtimeGateway.invoke<PluginListResponse>('plugin', 'list', {
+      includeManifest: false
+    });
 
     const plugins = (response.plugins ?? []).map((item) => mapPluginRecord(item));
     const overrides = await this.getPluginEnableOverrides();
@@ -419,42 +312,26 @@ export class EcosystemSettingsService {
   }
 
   public async checkPluginUpdates(): Promise<Array<Record<string, unknown>>> {
-    try {
-      const response = await invokeBridge<{ updates?: Array<Record<string, unknown>> }>('plugin', 'update.check', {});
-      return response.updates ?? [];
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
-
-      return [];
-    }
+    const response = await runtimeGateway.invoke<{ updates?: Array<Record<string, unknown>> }>('plugin', 'update.check', {});
+    return response.updates ?? [];
   }
 
   public async applyPluginUpdates(pluginIds: string[]): Promise<Array<Record<string, unknown>>> {
-    try {
-      const response = await invokeBridge<{ updated?: Array<Record<string, unknown>> }>('plugin', 'update.apply', {
-        ...(pluginIds.length > 0 ? { pluginIds } : {})
-      });
-      return response.updated ?? [];
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
-
-      return [];
-    }
+    const response = await runtimeGateway.invoke<{ updated?: Array<Record<string, unknown>> }>('plugin', 'update.apply', {
+      ...(pluginIds.length > 0 ? { pluginIds } : {})
+    });
+    return response.updated ?? [];
   }
 
   public async installPlugin(packagePath: string, force: boolean): Promise<void> {
-    await invokeBridge('plugin', 'install', {
+    await runtimeGateway.invoke('plugin', 'install', {
       packagePath,
       ...(force ? { force: true } : {})
     });
   }
 
   public async uninstallPlugin(plugin: PluginRecord): Promise<void> {
-    await invokeBridge('plugin', 'uninstall', {
+    await runtimeGateway.invoke('plugin', 'uninstall', {
       pluginId: plugin.id,
       type: plugin.type
     });
@@ -465,95 +342,49 @@ export class EcosystemSettingsService {
   public async setPluginEnabled(plugin: PluginRecord, enabled: boolean): Promise<void> {
     const action = enabled ? 'enable' : 'disable';
 
-    try {
-      await invokeBridge('plugin', action, {
-        pluginId: plugin.id,
-        type: plugin.type
-      });
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
-    }
+    await runtimeGateway.invoke('plugin', action, {
+      pluginId: plugin.id,
+      type: plugin.type
+    });
 
     await this.setConfigValue(`${CONFIG_KEYS.pluginEnabledPrefix}${plugin.id}`, enabled);
   }
 
   public async listLocales(): Promise<string[]> {
-    try {
-      const response = await invokeBridge<{ locales?: string[] }>('i18n', 'list', {});
-      const locales = response.locales ?? [];
-      return locales.length > 0 ? locales : ['zh-CN', 'en-US', 'ja-JP'];
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
-
-      return ['zh-CN', 'en-US', 'ja-JP'];
-    }
+    const response = await runtimeGateway.i18n.list();
+    const locales = response.locales ?? [];
+    return locales.length > 0 ? locales : [...DEFAULT_LOCALES];
   }
 
   public async getCurrentLocale(): Promise<string> {
-    try {
-      const response = await invokeBridge<{ locale?: string }>('i18n', 'getCurrent', {});
-      if (response.locale) {
-        return response.locale;
-      }
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
-    }
-
-    return this.readLocale().then((value) => asString(value, DEFAULT_SETTINGS.locale));
+    const response = await runtimeGateway.i18n.getCurrent();
+    return asString(response.locale, DEFAULT_SETTINGS.locale);
   }
 
   public async setCurrentLocale(locale: string): Promise<void> {
-    await invokeFirstSuccessful([
-      {
-        namespace: 'i18n',
-        action: 'setCurrent',
-        params: { locale }
-      },
-      {
-        namespace: 'i18n',
-        action: 'setLanguage',
-        params: { locale, persist: true }
-      }
-    ]);
+    await runtimeGateway.i18n.setCurrent(locale, { persist: true });
   }
 
   public async updateDictionary(
     entries?: Record<string, Record<string, string>>,
     pluginId?: string
   ): Promise<{ updated: boolean; registered: number }> {
-    try {
-      const response = await invokeBridge<{ updated?: boolean; registered?: number }>(
-        'i18n',
-        'dictionary.update',
-        {
-          ...(pluginId ? { pluginId } : {}),
-          ...(entries ? { entries } : {})
-        }
-      );
+    if (!entries || Object.keys(entries).length === 0) {
       return {
-        updated: asBoolean(response.updated, false),
-        registered: asNumber(response.registered)
-      };
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error) || !entries) {
-        throw error;
-      }
-
-      const response = await invokeBridge<{ registered?: number }>('i18n', 'registerVocabulary', {
-        pluginId: pluginId ?? 'chips.settings.manual',
-        entries
-      });
-      return {
-        updated: asNumber(response.registered) > 0,
-        registered: asNumber(response.registered)
+        updated: false,
+        registered: 0
       };
     }
+
+    const response = await runtimeGateway.i18n.registerVocabulary({
+      pluginId: pluginId ?? 'chips.settings.manual',
+      entries
+    });
+
+    return {
+      updated: asNumber(response.registered) > 0,
+      registered: asNumber(response.registered)
+    };
   }
 
   public async loadGeneralSettings(): Promise<GeneralSettings> {
@@ -588,10 +419,7 @@ export class EcosystemSettingsService {
   }
 
   public async listThemeOptions(): Promise<ThemeOption[]> {
-    const response = await invokeFirstSuccessful<ThemeListResponse>([
-      { namespace: 'theme', action: 'list', params: {} },
-      { namespace: 'theme', action: 'list' }
-    ]);
+    const response = await runtimeGateway.invoke<ThemeListResponse>('theme', 'list', {});
 
     const themes = response.themes ?? [];
     return themes
@@ -604,206 +432,87 @@ export class EcosystemSettingsService {
   }
 
   public async getCurrentThemeId(): Promise<string> {
-    try {
-      const response = await invokeBridge<ThemeCurrentResponse>('theme', 'getCurrent', {});
-      return asString(response.id ?? response.themeId, DEFAULT_THEME_ID);
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        const message = error instanceof Error ? error.message.toLowerCase() : '';
-        if (message.includes('current') || message.includes('not set') || message.includes('not configured')) {
-          const fallback = await this.getConfigValue(CONFIG_KEYS.themeGlobal, DEFAULT_THEME_ID);
-          return asString(fallback, DEFAULT_THEME_ID);
-        }
-
-        throw error;
-      }
-    }
-
-    try {
-      const legacy = await invokeBridge<ThemeCurrentResponse>('theme', 'getCurrentTheme', {});
-      return asString(legacy.id ?? legacy.themeId, DEFAULT_THEME_ID);
-    } catch (legacyError: unknown) {
-      if (!isRouteMissingError(legacyError)) {
-        throw legacyError;
-      }
-    }
-
-    const fallback = await this.getConfigValue(CONFIG_KEYS.themeGlobal, DEFAULT_THEME_ID);
-    return asString(fallback, DEFAULT_THEME_ID);
+    const response = await runtimeGateway.theme.getCurrent({});
+    return asString(response.themeId, DEFAULT_THEME_ID);
   }
 
   public async applyTheme(themeId: string): Promise<void> {
-    try {
-      await invokeBridge('theme', 'apply', { id: themeId });
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
-
-      await this.setConfigValue(CONFIG_KEYS.themeGlobal, themeId);
-    }
-
+    await runtimeGateway.theme.apply(themeId);
     await this.refreshThemeCss();
   }
 
   public async installTheme(packagePath: string, overwrite: boolean): Promise<void> {
-    await invokeBridge('theme', 'install', {
+    await runtimeGateway.invoke('theme', 'install', {
       packagePath,
       ...(overwrite ? { overwrite: true } : {})
     });
   }
 
   public async uninstallTheme(themeId: string): Promise<void> {
-    await invokeFirstSuccessful([
-      {
-        namespace: 'theme',
-        action: 'uninstall',
-        params: { themeId }
-      },
-      {
-        namespace: 'theme',
-        action: 'uninstall',
-        params: { id: themeId }
-      }
-    ]);
+    await runtimeGateway.invoke('theme', 'uninstall', {
+      themeId
+    });
 
     await this.refreshThemeCss();
   }
 
   public async refreshThemeCss(): Promise<ThemeCssLayerMap> {
-    const response = await invokeBridge<ThemeAllCssResponse>('theme', 'getAllCss', {});
+    const response = await runtimeGateway.theme.getAllCss({}) as ThemeAllCssResponse;
     const layers = normalizeThemeCssLayers(response.css);
     applyThemeCssLayers(layers);
     return layers;
   }
 
   public async getBundleStatus(): Promise<BundleStatus> {
-    try {
-      const response = await invokeBridge<BundleStatus>('bundle', 'status', {});
-      return {
-        requiredTypes: response.requiredTypes ?? ['card', 'layout', 'module'],
-        installedCount: asNumber(response.installedCount),
-        healthy: asBoolean(response.healthy, false)
-      };
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
+    const response = await runtimeGateway.invoke<BundleStatus>('bundle', 'status', {});
 
-      const plugins = await this.listPlugins();
-      const installedCount = plugins.filter((plugin) => ['card', 'layout', 'module'].includes(plugin.type)).length;
-      return {
-        requiredTypes: ['card', 'layout', 'module'],
-        installedCount,
-        healthy: installedCount > 0
-      };
-    }
+    return {
+      requiredTypes: response.requiredTypes ?? ['card', 'layout', 'module'],
+      installedCount: asNumber(response.installedCount),
+      healthy: asBoolean(response.healthy, false)
+    };
   }
 
   public async updateBundle(): Promise<void> {
-    await invokeBridge('bundle', 'update', {});
+    await runtimeGateway.invoke('bundle', 'update', {});
   }
 
   public async repairBundle(): Promise<void> {
-    await invokeBridge('bundle', 'repair', {});
+    await runtimeGateway.invoke('bundle', 'repair', {});
   }
 
   public async getWorkspacePath(): Promise<string> {
-    try {
-      const response = await invokeBridge<{ path?: string }>('workspace', 'get', {});
-      return asString(response.path, '');
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
-
-      const value = await this.getConfigValue(CONFIG_KEYS.workspaceRootPath, '');
-      return asString(value, '');
-    }
+    const response = await runtimeGateway.invoke<{ path?: string }>('workspace', 'get', {});
+    return asString(response.path, '');
   }
 
   public async setWorkspacePath(path: string): Promise<void> {
-    try {
-      await invokeBridge('workspace', 'set', { path });
-      return;
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
-    }
-
-    await this.setConfigValue(CONFIG_KEYS.workspaceRootPath, path);
+    await runtimeGateway.invoke('workspace', 'set', { path });
   }
 
   public async getWorkspaceExchangePolicy(): Promise<WorkspaceExchangePolicy> {
-    try {
-      const response = await invokeBridge<WorkspaceExchangePolicy>('workspace', 'exchange.getPolicy', {});
-      return {
-        mode: response.mode === 'link' ? 'link' : 'copy',
-        conflict:
-          response.conflict === 'overwrite' || response.conflict === 'skip' || response.conflict === 'rename'
-            ? response.conflict
-            : 'rename'
-      };
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
+    const response = await runtimeGateway.invoke<WorkspaceExchangePolicy>('workspace', 'exchange.getPolicy', {});
 
-      const [mode, conflict] = await Promise.all([
-        this.getConfigValue(CONFIG_KEYS.workspaceExchangeMode, 'copy'),
-        this.getConfigValue(CONFIG_KEYS.workspaceExchangeConflict, 'rename')
-      ]);
-
-      return {
-        mode: mode === 'link' ? 'link' : 'copy',
-        conflict:
-          conflict === 'overwrite' || conflict === 'skip' || conflict === 'rename'
-            ? conflict
-            : 'rename'
-      };
-    }
+    return {
+      mode: response.mode === 'link' ? 'link' : 'copy',
+      conflict:
+        response.conflict === 'overwrite' || response.conflict === 'skip' || response.conflict === 'rename'
+          ? response.conflict
+          : 'rename'
+    };
   }
 
   public async setWorkspaceExchangePolicy(policy: WorkspaceExchangePolicy): Promise<void> {
-    try {
-      await invokeBridge('workspace', 'exchange.setPolicy', policy);
-      return;
-    } catch (error: unknown) {
-      if (!isRouteMissingError(error)) {
-        throw error;
-      }
-    }
-
-    await Promise.all([
-      this.setConfigValue(CONFIG_KEYS.workspaceExchangeMode, policy.mode),
-      this.setConfigValue(CONFIG_KEYS.workspaceExchangeConflict, policy.conflict)
-    ]);
+    await runtimeGateway.invoke('workspace', 'exchange.setPolicy', policy);
   }
 
   private async persistLanguage(locale: string): Promise<void> {
-    await invokeFirstSuccessful([
-      {
-        namespace: 'i18n',
-        action: 'setLanguage',
-        params: {
-          locale,
-          persist: true
-        }
-      },
-      {
-        namespace: 'i18n',
-        action: 'setLocale',
-        params: {
-          locale
-        }
-      }
-    ]);
+    await runtimeGateway.i18n.setCurrent(locale, { persist: true });
   }
 
   private async readLocale(): Promise<unknown> {
     try {
-      const response = await invokeBridge<{ locale?: string }>('i18n', 'getCurrentLanguage', {});
+      const response = await runtimeGateway.i18n.getCurrent();
       if (typeof response.locale === 'string') {
         return response.locale;
       }
@@ -816,7 +525,7 @@ export class EcosystemSettingsService {
 
   private async readThemeId(): Promise<unknown> {
     try {
-      const response = await invokeBridge<ThemeCurrentResponse>('theme', 'getCurrent', {});
+      const response = await runtimeGateway.theme.getCurrent({}) as ThemeCurrentResponse;
       if (typeof response.id === 'string') {
         return response.id;
       }
@@ -833,29 +542,21 @@ export class EcosystemSettingsService {
 
   private async getConfigValue(key: string, fallback: unknown): Promise<unknown> {
     try {
-      const response = await invokeBridge<ConfigGetResponse>('config', 'get', {
-        key,
-        fallback
-      });
-      return response.value ?? fallback;
+      return await runtimeGateway.getConfigValue(key, fallback);
     } catch {
       return fallback;
     }
   }
 
   private async setConfigValue(key: string, value: unknown): Promise<void> {
-    await invokeBridge('config', 'set', {
-      key,
-      value,
-      scope: 'user'
-    });
+    await runtimeGateway.setConfigValue(key, value, 'user');
   }
 
   private async getPluginEnableOverrides(): Promise<Map<string, boolean>> {
     const map = new Map<string, boolean>();
 
     try {
-      const response = await invokeBridge<ConfigListResponse>('config', 'list', {
+      const response = await runtimeGateway.invoke<ConfigListResponse>('config', 'list', {
         prefix: CONFIG_KEYS.pluginEnabledPrefix,
         scope: 'effective'
       });
@@ -877,7 +578,7 @@ export class EcosystemSettingsService {
 
   private async clearPluginEnabledOverride(pluginId: string): Promise<void> {
     try {
-      await invokeBridge('config', 'delete', {
+      await runtimeGateway.invoke('config', 'delete', {
         key: `${CONFIG_KEYS.pluginEnabledPrefix}${pluginId}`,
         scope: 'user'
       });
