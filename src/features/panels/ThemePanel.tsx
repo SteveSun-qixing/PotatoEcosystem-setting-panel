@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, ChipsFileUpload, Dialog } from '@chips/component-library';
+import { ChipsButton, ChipsDialog, ChipsFileUpload } from '@chips/component-library';
 
 import { DEFAULT_THEME_ID } from '@/constants/theme';
 import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
@@ -17,7 +17,7 @@ export function ThemePanel() {
   const { t } = useI18n();
   const [themes, setThemes] = useState<ThemeOption[]>([]);
   const [currentThemeId, setCurrentThemeId] = useState('');
-  const [installFile, setInstallFile] = useState<File | null>(null);
+  const [installFiles, setInstallFiles] = useState<File[]>([]);
   const [overwritePending, setOverwritePending] = useState<ThemeOverwriteState | null>(null);
   const [themePendingRemoval, setThemePendingRemoval] = useState<ThemeOption | null>(null);
   const [loading, setLoading] = useState(false);
@@ -63,7 +63,7 @@ export function ThemePanel() {
     setError(null);
     try {
       await ecosystemSettingsService.installTheme(packagePath, overwrite);
-      setInstallFile(null);
+      setInstallFiles([]);
       setOverwritePending(null);
       await refresh();
     } catch (reason: unknown) {
@@ -81,10 +81,11 @@ export function ThemePanel() {
     }
   };
 
-  const handleInstallFileChange = (file: File | null): void => {
-    setInstallFile(file);
+  const handleInstallFileChange = (files: File[]): void => {
+    setInstallFiles(files);
     setOverwritePending(null);
 
+    const file = files[0];
     if (!file) {
       return;
     }
@@ -127,45 +128,48 @@ export function ThemePanel() {
     void refresh();
   }, []);
 
+  const panelState = error ? 'error' : loading || saving ? 'loading' : 'idle';
+  const selectedInstallFile = installFiles[0] ?? null;
+
   return (
-    <section className="chips-settings-panel">
-      <header className="chips-settings-panel__header">
-        <div>
-          <h2 className="chips-settings-panel__title">{t('i18n.plugin.694001')}</h2>
-          <p className="chips-settings-panel__description">{t('i18n.plugin.694002')}</p>
+    <section className="chips-settings-panel" data-scope="settings.panel.theme" data-part="panel" data-state={panelState}>
+      <header className="chips-settings-panel__header" data-part="header">
+        <div data-part="header-content">
+          <h2 className="chips-settings-panel__title" data-part="title">{t('i18n.plugin.694001')}</h2>
+          <p className="chips-settings-panel__description" data-part="description">{t('i18n.plugin.694002')}</p>
         </div>
-        <Button onClick={() => void refresh()} disabled={loading || saving}>
+        <ChipsButton onClick={() => void refresh()} disabled={loading || saving} data-part="refresh-action">
           {t('i18n.plugin.694003')}
-        </Button>
+        </ChipsButton>
       </header>
 
       <ErrorAlert error={error} summaryKey="i18n.plugin.691008" />
 
-      <article className="chips-settings-card">
-        <h3 className="chips-settings-card__title">{t('i18n.plugin.694006')}</h3>
-        <p className="chips-settings-card__meta">{t('i18n.plugin.699026')}</p>
-        <div className="chips-settings-form">
+      <article className="chips-settings-card" data-part="card-install">
+        <h3 className="chips-settings-card__title" data-part="card-title">{t('i18n.plugin.694006')}</h3>
+        <p className="chips-settings-card__meta" data-part="meta">{t('i18n.plugin.699026')}</p>
+        <div className="chips-settings-form" data-part="form">
           <ChipsFileUpload
-            value={installFile}
+            value={installFiles}
             disabled={loading || saving}
             acceptExtensions={['.cpk']}
             onChange={handleInstallFileChange}
             onError={(uploadError) => setError(toDisplayError(uploadError))}
           />
-          {installFile ? (
-            <p className="chips-settings-card__meta">{t('i18n.plugin.694029', { fileName: installFile.name })}</p>
+          {selectedInstallFile ? (
+            <p className="chips-settings-card__meta" data-part="meta">{t('i18n.plugin.694029', { fileName: selectedInstallFile.name })}</p>
           ) : null}
         </div>
       </article>
 
-      <article className="chips-settings-card chips-settings-card--table">
-        <header className="chips-settings-card__header">
-          <h3 className="chips-settings-card__title">{t('i18n.plugin.694015')}</h3>
-          <p className="chips-settings-card__meta">{t('i18n.plugin.694016')}</p>
+      <article className="chips-settings-card chips-settings-card--table" data-part="card-table">
+        <header className="chips-settings-card__header" data-part="header">
+          <h3 className="chips-settings-card__title" data-part="card-title">{t('i18n.plugin.694015')}</h3>
+          <p className="chips-settings-card__meta" data-part="meta">{t('i18n.plugin.694016')}</p>
         </header>
-        <table className="chips-settings-table">
+        <table className="chips-settings-table" data-part="table">
           <thead>
-            <tr>
+            <tr data-part="row">
               <th>{t('i18n.plugin.694017')}</th>
               <th>{t('i18n.plugin.694018')}</th>
               <th>{t('i18n.plugin.694019')}</th>
@@ -180,7 +184,7 @@ export function ThemePanel() {
               const disableDelete = isCurrent || isDefault;
 
               return (
-                <tr key={theme.id}>
+                <tr key={theme.id} data-part="row" data-state={isCurrent ? 'active' : 'idle'}>
                   <td>
                     <p className="chips-settings-table__name">{theme.name}</p>
                   </td>
@@ -189,34 +193,36 @@ export function ThemePanel() {
                   </td>
                   <td>{theme.version || '-'}</td>
                   <td>
-                    <div className="chips-settings-table__badges">
+                    <div className="chips-settings-table__badges" data-part="status-group">
                       {isCurrent ? (
-                        <span className="chips-settings-status chips-settings-status--ok">
+                        <span className="chips-settings-status chips-settings-status--ok" data-part="status" data-state="active">
                           {t('i18n.plugin.694022')}
                         </span>
                       ) : null}
                       {isDefault ? (
-                        <span className="chips-settings-status chips-settings-status--default">
+                        <span className="chips-settings-status chips-settings-status--default" data-part="status" data-state="default">
                           {t('i18n.plugin.694025')}
                         </span>
                       ) : null}
                     </div>
                   </td>
-                  <td className="chips-settings-table__actions">
-                    <Button
+                  <td className="chips-settings-table__actions" data-part="actions">
+                    <ChipsButton
                       onClick={() => void applyTheme(theme.id)}
                       disabled={loading || saving || isCurrent}
+                      data-part="apply-action"
                     >
                       {t('i18n.plugin.694023')}
-                    </Button>
-                    <Button
+                    </ChipsButton>
+                    <ChipsButton
                       onClick={() => setThemePendingRemoval(theme)}
                       disabled={loading || saving || disableDelete}
+                      data-part="delete-action"
                     >
                       {t('i18n.plugin.694024')}
-                    </Button>
+                    </ChipsButton>
                     {disableDelete ? (
-                      <p className="chips-settings-table__hint">
+                      <p className="chips-settings-table__hint" data-part="hint">
                         {isCurrent ? t('i18n.plugin.694027') : t('i18n.plugin.694026')}
                       </p>
                     ) : null}
@@ -225,7 +231,7 @@ export function ThemePanel() {
               );
             })}
             {!loading && themes.length === 0 ? (
-              <tr>
+              <tr data-part="row" data-state="empty">
                 <td colSpan={5} className="chips-settings-table__empty">
                   {t('i18n.plugin.694028')}
                 </td>
@@ -236,8 +242,9 @@ export function ThemePanel() {
       </article>
 
       {overwritePending ? (
-        <Dialog
+        <ChipsDialog
           defaultOpen
+          chipsScope="settings.dialog.confirm"
           className="chips-settings-confirm-dialog"
           onOpenChange={(open) => {
             if (!open) {
@@ -247,21 +254,23 @@ export function ThemePanel() {
           title={t('i18n.plugin.694030')}
           description={overwritePending.fileName}
         >
-          <div className="chips-settings-dialog-actions">
-            <Button onClick={() => setOverwritePending(null)}>{t('i18n.plugin.694032')}</Button>
-            <Button
+          <div className="chips-settings-dialog-actions" data-part="actions">
+            <ChipsButton onClick={() => setOverwritePending(null)} data-part="cancel-action">{t('i18n.plugin.694032')}</ChipsButton>
+            <ChipsButton
               onClick={() => void installThemeByPath(overwritePending.packagePath, overwritePending.fileName, true)}
               disabled={saving}
+              data-part="confirm-action"
             >
               {t('i18n.plugin.694031')}
-            </Button>
+            </ChipsButton>
           </div>
-        </Dialog>
+        </ChipsDialog>
       ) : null}
 
       {themePendingRemoval ? (
-        <Dialog
+        <ChipsDialog
           defaultOpen
+          chipsScope="settings.dialog.confirm"
           className="chips-settings-confirm-dialog"
           onOpenChange={(open) => {
             if (!open) {
@@ -271,13 +280,13 @@ export function ThemePanel() {
           title={t('i18n.plugin.694013')}
           description={t('i18n.plugin.694014', { themeId: themePendingRemoval.id })}
         >
-          <div className="chips-settings-dialog-actions">
-            <Button onClick={() => setThemePendingRemoval(null)}>{t('i18n.plugin.694032')}</Button>
-            <Button onClick={() => void uninstallTheme()} disabled={saving}>
+          <div className="chips-settings-dialog-actions" data-part="actions">
+            <ChipsButton onClick={() => setThemePendingRemoval(null)} data-part="cancel-action">{t('i18n.plugin.694032')}</ChipsButton>
+            <ChipsButton onClick={() => void uninstallTheme()} disabled={saving} data-part="confirm-action">
               {t('i18n.plugin.694024')}
-            </Button>
+            </ChipsButton>
           </div>
-        </Dialog>
+        </ChipsDialog>
       ) : null}
     </section>
   );

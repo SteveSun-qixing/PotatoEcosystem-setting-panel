@@ -1,15 +1,23 @@
 schemaVersion: "1.0.0"
 id: "chips-official.ecosystem-settings"
-name: "生态设置面板"
+name: "i18n.plugin.699007"
 version: "1.0.0"
 type: "app"
 autoStart: true
 publisher: "Chips Official"
-description: "薯片生态设置面板，提供运行状态监控、插件管理与通用配置管理能力。"
+description: "i18n.plugin.699008"
 icon: "assets/icon.png"
 
 entry:
   main: "dist/index.html"
+
+ui:
+  layout:
+    owner: "page"
+    unit: "cpx"
+    baseWidth: 1024
+    contract: "./contracts/page-layout.contract.json"
+    minFunctionalSet: "./contracts/min-functional-set.json"
 
 permissions:
   - sys.read
@@ -36,6 +44,7 @@ window:
 locales:
   default: "zh-CN"
   supported: ["zh-CN", "en-US", "ja-JP"]
+  path: "locales"
 
 compatibility:
   host: "^1.0.0"

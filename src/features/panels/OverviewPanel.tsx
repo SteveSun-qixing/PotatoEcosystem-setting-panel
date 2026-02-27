@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Input } from '@chips/component-library';
+import { ChipsButton, ChipsInput } from '@chips/component-library';
 
 import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
 import type { RuntimeHealthSnapshot, RuntimeLogQueryResult, RuntimeOverview } from '@/types';
@@ -104,102 +104,105 @@ export function OverviewPanel() {
     void queryLogs();
   }, []);
 
+  const panelState = error ? 'error' : loading || changingState ? 'loading' : 'idle';
+
   return (
-    <section className="chips-settings-panel">
-      <header className="chips-settings-panel__header">
-        <div>
-          <h2 className="chips-settings-panel__title">{t('i18n.plugin.690001')}</h2>
-          <p className="chips-settings-panel__description">{t('i18n.plugin.690002')}</p>
+    <section className="chips-settings-panel" data-scope="settings.panel.overview" data-part="panel" data-state={panelState}>
+      <header className="chips-settings-panel__header" data-part="header">
+        <div data-part="header-content">
+          <h2 className="chips-settings-panel__title" data-part="title">{t('i18n.plugin.690001')}</h2>
+          <p className="chips-settings-panel__description" data-part="description">{t('i18n.plugin.690002')}</p>
         </div>
-        <Button onClick={() => void refresh()} disabled={loading}>
+        <ChipsButton onClick={() => void refresh()} disabled={loading} data-part="refresh-action">
           {t('i18n.plugin.690003')}
-        </Button>
+        </ChipsButton>
       </header>
 
       <ErrorAlert error={error} summaryKey="i18n.plugin.690004" />
 
-      <div className="chips-settings-grid">
-        <article className="chips-settings-card">
-          <h3 className="chips-settings-card__title">{t('i18n.plugin.690005')}</h3>
-          <dl className="chips-settings-card__list">
-            <div className="chips-settings-card__item">
+      <div className="chips-settings-grid" data-part="grid">
+        <article className="chips-settings-card" data-part="card-host">
+          <h3 className="chips-settings-card__title" data-part="card-title">{t('i18n.plugin.690005')}</h3>
+          <dl className="chips-settings-card__list" data-part="definition-list">
+            <div className="chips-settings-card__item" data-part="definition-item">
               <dt>{t('i18n.plugin.690006')}</dt>
               <dd>{snapshot?.hostVersion ?? '-'}</dd>
             </div>
-            <div className="chips-settings-card__item">
+            <div className="chips-settings-card__item" data-part="definition-item">
               <dt>{t('i18n.plugin.690007')}</dt>
               <dd>{snapshot?.hostPid ?? '-'}</dd>
             </div>
-            <div className="chips-settings-card__item">
+            <div className="chips-settings-card__item" data-part="definition-item">
               <dt>{t('i18n.plugin.690008')}</dt>
               <dd>{snapshot?.platform ?? '-'}</dd>
             </div>
-            <div className="chips-settings-card__item">
+            <div className="chips-settings-card__item" data-part="definition-item">
               <dt>{t('i18n.plugin.690009')}</dt>
               <dd>{snapshot?.nodeVersion ?? '-'}</dd>
             </div>
           </dl>
         </article>
 
-        <article className="chips-settings-card">
-          <h3 className="chips-settings-card__title">{t('i18n.plugin.690010')}</h3>
-          <dl className="chips-settings-card__list">
-            <div className="chips-settings-card__item">
+        <article className="chips-settings-card" data-part="card-kernel">
+          <h3 className="chips-settings-card__title" data-part="card-title">{t('i18n.plugin.690010')}</h3>
+          <dl className="chips-settings-card__list" data-part="definition-list">
+            <div className="chips-settings-card__item" data-part="definition-item">
               <dt>{t('i18n.plugin.690011')}</dt>
               <dd>{snapshot?.routeCount ?? '-'}</dd>
             </div>
-            <div className="chips-settings-card__item">
+            <div className="chips-settings-card__item" data-part="definition-item">
               <dt>{t('i18n.plugin.690012')}</dt>
               <dd>{snapshot?.namespaceCount ?? '-'}</dd>
             </div>
-            <div className="chips-settings-card__item">
+            <div className="chips-settings-card__item" data-part="definition-item">
               <dt>{t('i18n.plugin.690013')}</dt>
               <dd>{snapshot?.p95LatencyMs ?? '-'}</dd>
             </div>
-            <div className="chips-settings-card__item">
+            <div className="chips-settings-card__item" data-part="definition-item">
               <dt>{t('i18n.plugin.690014')}</dt>
               <dd>{snapshot?.errorCount ?? '-'}</dd>
             </div>
           </dl>
         </article>
 
-        <article className="chips-settings-card chips-settings-card--full">
-          <h3 className="chips-settings-card__title">{t('i18n.plugin.690015')}</h3>
-          <p className="chips-settings-card__meta">
+        <article className="chips-settings-card chips-settings-card--full" data-part="card-runtime-control">
+          <h3 className="chips-settings-card__title" data-part="card-title">{t('i18n.plugin.690015')}</h3>
+          <p className="chips-settings-card__meta" data-part="meta">
             {t('i18n.plugin.690016', {
               time: lastUpdatedAt ? new Date(lastUpdatedAt).toLocaleString() : t('i18n.plugin.690017')
             })}
           </p>
-          <div className="chips-settings-card__toolbar">
-            <Input
+          <div className="chips-settings-card__toolbar" data-part="toolbar">
+            <ChipsInput
               aria-label={t('i18n.plugin.690021')}
               value={restartReason}
               onChange={(event) => setRestartReason(event.target.value)}
               placeholder={t('i18n.plugin.690021')}
+              data-part="field-restart-reason"
             />
-            <Button onClick={() => void startHost()} disabled={changingState}>
+            <ChipsButton onClick={() => void startHost()} disabled={changingState} data-part="action-start">
               {t('i18n.plugin.690023')}
-            </Button>
-            <Button onClick={() => void stopHost()} disabled={changingState}>
+            </ChipsButton>
+            <ChipsButton onClick={() => void stopHost()} disabled={changingState} data-part="action-stop">
               {t('i18n.plugin.690024')}
-            </Button>
+            </ChipsButton>
           </div>
-          <div className="chips-settings-panel__actions">
-            <Button onClick={() => void restartHost()} disabled={changingState}>
+          <div className="chips-settings-panel__actions" data-part="actions">
+            <ChipsButton onClick={() => void restartHost()} disabled={changingState} data-part="action-restart">
               {t('i18n.plugin.690022')}
-            </Button>
+            </ChipsButton>
           </div>
         </article>
       </div>
 
-      <article className="chips-settings-card">
-        <h3 className="chips-settings-card__title">{t('i18n.plugin.690025')}</h3>
+      <article className="chips-settings-card" data-part="card-health">
+        <h3 className="chips-settings-card__title" data-part="card-title">{t('i18n.plugin.690025')}</h3>
         {health?.checks.length ? (
-          <ul className="chips-settings-list">
+          <ul className="chips-settings-list" data-part="list">
             {health.checks.map((check) => (
-              <li className="chips-settings-list__item" key={check.id}>
+              <li className="chips-settings-list__item" key={check.id} data-part="row" data-state={check.healthy ? 'healthy' : 'error'}>
                 <strong>{check.id}</strong>
-                <span className={`chips-settings-status ${check.healthy ? 'chips-settings-status--ok' : 'chips-settings-status--error'}`}>
+                <span className={`chips-settings-status ${check.healthy ? 'chips-settings-status--ok' : 'chips-settings-status--error'}`} data-part="status" data-state={check.healthy ? 'healthy' : 'error'}>
                   {check.healthy ? t('i18n.plugin.690026') : t('i18n.plugin.690027')}
                 </span>
                 <span className="chips-settings-list__message">{check.message}</span>
@@ -207,31 +210,32 @@ export function OverviewPanel() {
             ))}
           </ul>
         ) : (
-          <p className="chips-settings-card__meta">{t('i18n.plugin.690028')}</p>
+          <p className="chips-settings-card__meta" data-part="meta">{t('i18n.plugin.690028')}</p>
         )}
       </article>
 
-      <article className="chips-settings-card">
-        <h3 className="chips-settings-card__title">{t('i18n.plugin.690029')}</h3>
-        <div className="chips-settings-card__toolbar">
-          <Input
-            aria-label={t('i18n.plugin.690030')}
-            value={logQuery}
-            onChange={(event) => setLogQuery(event.target.value)}
-            placeholder={t('i18n.plugin.690030')}
-          />
-          <Button onClick={() => void queryLogs()}>{t('i18n.plugin.690031')}</Button>
-          <Button onClick={() => void exportReport()}>{t('i18n.plugin.690032')}</Button>
+      <article className="chips-settings-card" data-part="card-logs">
+        <h3 className="chips-settings-card__title" data-part="card-title">{t('i18n.plugin.690029')}</h3>
+        <div className="chips-settings-card__toolbar" data-part="toolbar">
+          <ChipsInput
+              aria-label={t('i18n.plugin.690030')}
+              value={logQuery}
+              onChange={(event) => setLogQuery(event.target.value)}
+              placeholder={t('i18n.plugin.690030')}
+              data-part="field-log-query"
+            />
+          <ChipsButton onClick={() => void queryLogs()} data-part="action-query-logs">{t('i18n.plugin.690031')}</ChipsButton>
+          <ChipsButton onClick={() => void exportReport()} data-part="action-export-report">{t('i18n.plugin.690032')}</ChipsButton>
         </div>
         {logs?.logs.length ? (
-          <div className="chips-settings-log">
+          <div className="chips-settings-log" data-part="log-output" role="log" aria-live="polite">
             <pre>{JSON.stringify(logs.logs, null, 2)}</pre>
           </div>
         ) : (
-          <p className="chips-settings-card__meta">{t('i18n.plugin.690033')}</p>
+          <p className="chips-settings-card__meta" data-part="meta">{t('i18n.plugin.690033')}</p>
         )}
         {report ? (
-          <details className="chips-settings-details">
+          <details className="chips-settings-details" data-part="details">
             <summary>{t('i18n.plugin.690034')}</summary>
             <pre>{JSON.stringify(report, null, 2)}</pre>
           </details>

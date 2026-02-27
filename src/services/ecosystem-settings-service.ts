@@ -57,6 +57,24 @@ interface ThemeAllCssResponse {
   css?: Record<string, unknown>;
 }
 
+interface ThemeResolveResponse {
+  resolvedThemeId?: string;
+  mergedTokens?: Record<string, unknown>;
+}
+
+interface ThemeContractGetResponse {
+  contract?: Record<string, unknown>;
+}
+
+interface ThemeRuntimeSnapshot {
+  currentThemeId: string;
+  globalThemeId: string;
+  resolvedThemeId: string;
+  mergedTokens: Record<string, string>;
+  contract: Record<string, unknown>;
+  cssLayers: ThemeCssLayerMap;
+}
+
 interface ConfigListResponse {
   items?: Array<{ key: string; value: unknown }>;
 }
@@ -117,6 +135,8 @@ const DEFAULT_LOCALES = [
   'it-IT'
 ] as const;
 
+const SETTINGS_APP_ID = 'chips-official.ecosystem-settings';
+
 function normalizePathFragment(input: string): string {
   return input.replace(/\\/g, '/').replace(/\/+$/, '');
 }
@@ -162,6 +182,14 @@ function asNumber(value: unknown, fallback = 0): number {
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    return null;
+  }
+
+  return value as Record<string, unknown>;
+}
+
 function normalizePluginType(value: unknown): PluginRecord['type'] {
   if (value === 'card' || value === 'layout' || value === 'module' || value === 'theme') {
     return value;
@@ -203,6 +231,8 @@ function normalizeRuntimeOverview(payload: SysStatusResponse): RuntimeOverview {
 }
 
 export class EcosystemSettingsService {
+  private themeRuntimeSnapshot: ThemeRuntimeSnapshot | null = null;
+
   public async resolveInstallPackagePath(file: File): Promise<string> {
     const candidate = file as File & { path?: string };
     if (typeof candidate.path === 'string' && candidate.path.length > 0) {
@@ -212,7 +242,7 @@ export class EcosystemSettingsService {
     if (!file.name.toLowerCase().endsWith('.cpk')) {
       throw {
         code: 'PACKAGE_EXTENSION_INVALID',
-        message: 'Only .cpk package files are supported.'
+        message: 'i18n.plugin.699026'
       };
     }
 
@@ -238,7 +268,7 @@ export class EcosystemSettingsService {
     } catch (error: unknown) {
       throw {
         code: 'FILE_READ_FAILED',
-        message: 'Unable to persist selected package file.',
+        message: 'i18n.plugin.699028',
         details: {
           fileName: file.name,
           cause: error instanceof Error ? error.message : String(error)
@@ -432,7 +462,7 @@ export class EcosystemSettingsService {
   }
 
   public async getCurrentThemeId(): Promise<string> {
-    const response = await runtimeGateway.theme.getCurrent({});
+    const response = await runtimeGateway.theme.getCurrent({ appId: SETTINGS_APP_ID });
     return asString(response.themeId, DEFAULT_THEME_ID);
   }
 
@@ -456,11 +486,23 @@ export class EcosystemSettingsService {
     await this.refreshThemeCss();
   }
 
+  public getThemeRuntimeSnapshot(): ThemeRuntimeSnapshot | null {
+    if (!this.themeRuntimeSnapshot) {
+      return null;
+    }
+
+    return {
+      ...this.themeRuntimeSnapshot,
+      mergedTokens: { ...this.themeRuntimeSnapshot.mergedTokens },
+      contract: { ...this.themeRuntimeSnapshot.contract },
+      cssLayers: { ...this.themeRuntimeSnapshot.cssLayers }
+    };
+  }
+
   public async refreshThemeCss(): Promise<ThemeCssLayerMap> {
-    const response = await runtimeGateway.theme.getAllCss({}) as ThemeAllCssResponse;
-    const layers = normalizeThemeCssLayers(response.css);
-    applyThemeCssLayers(layers);
-    return layers;
+    const snapshot = await this.buildThemeRuntimeSnapshot();
+    applyThemeCssLayers(snapshot.cssLayers);
+    return snapshot.cssLayers;
   }
 
   public async getBundleStatus(): Promise<BundleStatus> {
@@ -506,6 +548,42 @@ export class EcosystemSettingsService {
     await runtimeGateway.invoke('workspace', 'exchange.setPolicy', policy);
   }
 
+  private async buildThemeRuntimeSnapshot(): Promise<ThemeRuntimeSnapshot> {
+    const [currentResponse, globalResponse] = await Promise.all([
+      runtimeGateway.theme.getCurrent({ appId: SETTINGS_APP_ID }),
+      runtimeGateway.theme.getCurrent({})
+    ]);
+
+    const currentThemeId = asString(currentResponse.themeId, DEFAULT_THEME_ID);
+    const globalThemeId = asString(globalResponse.themeId, currentThemeId);
+    const chain = {
+      global: globalThemeId,
+      app: currentThemeId
+    };
+
+    const [resolveResponse, contractResponse, cssResponse] = await Promise.all([
+      runtimeGateway.theme.resolve({ chain }) as Promise<ThemeResolveResponse>,
+      runtimeGateway.theme.contractGet({ themeId: currentThemeId }) as Promise<ThemeContractGetResponse>,
+      runtimeGateway.theme.getAllCss({ appId: SETTINGS_APP_ID }) as Promise<ThemeAllCssResponse>
+    ]);
+
+    const mergedTokensRaw = asRecord(resolveResponse.mergedTokens) ?? {};
+    const mergedTokens = Object.fromEntries(
+      Object.entries(mergedTokensRaw).map(([token, value]) => [token, asString(value)])
+    );
+    const snapshot: ThemeRuntimeSnapshot = {
+      currentThemeId,
+      globalThemeId,
+      resolvedThemeId: asString(resolveResponse.resolvedThemeId, currentThemeId),
+      mergedTokens,
+      contract: asRecord(contractResponse.contract) ?? {},
+      cssLayers: normalizeThemeCssLayers(cssResponse.css)
+    };
+
+    this.themeRuntimeSnapshot = snapshot;
+    return snapshot;
+  }
+
   private async persistLanguage(locale: string): Promise<void> {
     await runtimeGateway.i18n.setCurrent(locale, { persist: true });
   }
@@ -525,7 +603,7 @@ export class EcosystemSettingsService {
 
   private async readThemeId(): Promise<unknown> {
     try {
-      const response = await runtimeGateway.theme.getCurrent({}) as ThemeCurrentResponse;
+      const response = await runtimeGateway.theme.getCurrent({ appId: SETTINGS_APP_ID }) as ThemeCurrentResponse;
       if (typeof response.id === 'string') {
         return response.id;
       }

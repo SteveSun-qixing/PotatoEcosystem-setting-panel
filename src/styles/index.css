@@ -1,23 +1,44 @@
 :root {
-  --chips-settings-bg: var(--chips-color-background, #0f172a);
-  --chips-settings-panel-bg: var(--chips-color-surface, #111824);
-  --chips-settings-panel-bg-elevated: var(--chips-color-surface-elevated, #182131);
-  --chips-settings-panel-bg-overlay: var(--chips-color-surface-overlay, #243246);
-  --chips-settings-border: var(--chips-color-border, #334560);
-  --chips-settings-border-strong: var(--chips-color-border-strong, #4b5f7e);
-  --chips-settings-text: var(--chips-color-text, #d9e1ee);
-  --chips-settings-muted: var(--chips-color-text-secondary, #91a1bb);
-  --chips-settings-muted-strong: var(--chips-color-text-muted, #687c9a);
-  --chips-settings-accent: var(--chips-color-primary, #3d79e0);
-  --chips-settings-danger: var(--chips-color-error, #ef6b7a);
-  --chips-settings-success: var(--chips-color-success, #2fcf8f);
-  --chips-settings-warning: var(--chips-color-warning, #e4b44d);
-  --chips-settings-accent-soft: var(--chips-color-primary-soft, rgba(61, 121, 224, 0.18));
-  --chips-settings-danger-soft: var(--chips-color-error-soft, rgba(239, 107, 122, 0.16));
-  --chips-settings-success-soft: var(--chips-color-success-soft, rgba(47, 207, 143, 0.16));
-  --chips-settings-shadow: var(--chips-shadow-md, 0 12px 28px rgba(1, 8, 18, 0.45));
-  --chips-settings-font-family:
-    var(--chips-font-family-base, 'IBM Plex Sans', 'Noto Sans SC', 'PingFang SC', 'Segoe UI', sans-serif);
+  --chips-settings-layout-base-width: 1024;
+  --chips-settings-layout-scale: calc(100vw / var(--chips-settings-layout-base-width));
+  --chips-settings-cpx-2: calc(2px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-4: calc(4px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-6: calc(6px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-8: calc(8px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-10: calc(10px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-12: calc(12px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-13: calc(13px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-14: calc(14px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-16: calc(16px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-18: calc(18px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-20: calc(20px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-22: calc(22px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-24: calc(24px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-28: calc(28px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-48: calc(48px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-56: calc(56px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-112: calc(112px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-240: calc(240px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-280: calc(280px * var(--chips-settings-layout-scale));
+  --chips-settings-cpx-540: calc(540px * var(--chips-settings-layout-scale));
+  --chips-settings-bg: var(--chips-sys-color-surface-muted);
+  --chips-settings-panel-bg: var(--chips-sys-color-surface);
+  --chips-settings-panel-bg-elevated: var(--chips-sys-color-surface-elevated, var(--chips-sys-color-surface));
+  --chips-settings-panel-bg-overlay: var(--chips-comp-overlay-surface, var(--chips-sys-color-surface-elevated));
+  --chips-settings-border: var(--chips-sys-color-border-default);
+  --chips-settings-border-strong: var(--chips-sys-color-border-strong);
+  --chips-settings-text: var(--chips-sys-color-text-primary);
+  --chips-settings-muted: var(--chips-sys-color-text-secondary);
+  --chips-settings-muted-strong: var(--chips-sys-color-text-tertiary, var(--chips-sys-color-text-secondary));
+  --chips-settings-accent: var(--chips-sys-color-brand);
+  --chips-settings-danger: var(--chips-sys-color-danger);
+  --chips-settings-success: var(--chips-sys-color-success);
+  --chips-settings-warning: var(--chips-sys-color-warning);
+  --chips-settings-accent-soft: var(--chips-sys-color-state-focus);
+  --chips-settings-danger-soft: var(--chips-sys-color-state-danger);
+  --chips-settings-success-soft: var(--chips-sys-color-state-success);
+  --chips-settings-shadow: var(--chips-comp-elevation-md);
+  --chips-settings-font-family: var(--chips-sys-font-family-ui);
 }
 
 * {
@@ -41,35 +62,35 @@ body {
 .chips-settings-shell {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: var(--chips-settings-cpx-280) 1fr;
 }
 
 .chips-settings-shell__sidebar {
-  padding: 24px 18px;
+  padding: var(--chips-settings-cpx-24) var(--chips-settings-cpx-18);
   border-right: 1px solid var(--chips-settings-border);
   background: linear-gradient(180deg, var(--chips-settings-panel-bg) 0%, var(--chips-settings-panel-bg-elevated) 100%);
 }
 
 .chips-settings-shell__header {
-  margin-bottom: 18px;
+  margin-bottom: var(--chips-settings-cpx-18);
 }
 
 .chips-settings-shell__title {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--chips-settings-cpx-20);
   line-height: 1.35;
 }
 
 .chips-settings-shell__subtitle {
-  margin: 8px 0 0;
+  margin: var(--chips-settings-cpx-8) 0 0;
   color: var(--chips-settings-muted);
-  font-size: 13px;
+  font-size: var(--chips-settings-cpx-13);
 }
 
 .chips-settings-shell__menu {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--chips-settings-cpx-10);
 }
 
 .chips-settings-shell__menu-item {
@@ -78,8 +99,8 @@ body {
   flex-direction: column;
   align-items: flex-start;
   border: 1px solid transparent;
-  padding: 10px 12px;
-  gap: 4px;
+  padding: var(--chips-settings-cpx-10) var(--chips-settings-cpx-12);
+  gap: var(--chips-settings-cpx-4);
 }
 
 .chips-settings-shell__menu-item--active {
@@ -88,61 +109,61 @@ body {
 }
 
 .chips-settings-shell__menu-label {
-  font-size: 14px;
+  font-size: var(--chips-settings-cpx-14);
   font-weight: 600;
 }
 
 .chips-settings-shell__menu-desc {
-  font-size: 12px;
+  font-size: var(--chips-settings-cpx-12);
   color: var(--chips-settings-muted);
 }
 
 .chips-settings-shell__main {
-  padding: 24px;
+  padding: var(--chips-settings-cpx-24);
 }
 
 .chips-settings-panel {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--chips-settings-cpx-16);
 }
 
 .chips-settings-panel__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--chips-settings-cpx-12);
 }
 
 .chips-settings-panel__title {
   margin: 0;
-  font-size: 22px;
+  font-size: var(--chips-settings-cpx-22);
   line-height: 1.35;
 }
 
 .chips-settings-panel__description {
-  margin: 6px 0 0;
+  margin: var(--chips-settings-cpx-6) 0 0;
   color: var(--chips-settings-muted);
-  font-size: 13px;
+  font-size: var(--chips-settings-cpx-13);
 }
 
 .chips-settings-panel__actions {
   display: flex;
-  gap: 8px;
+  gap: var(--chips-settings-cpx-8);
 }
 
 .chips-settings-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: var(--chips-settings-cpx-14);
 }
 
 .chips-settings-card {
   background: var(--chips-settings-panel-bg);
   border: 1px solid var(--chips-settings-border);
-  border-radius: 12px;
+  border-radius: var(--chips-settings-cpx-12);
   box-shadow: var(--chips-settings-shadow);
-  padding: 16px;
+  padding: var(--chips-settings-cpx-16);
 }
 
 .chips-settings-card--full {
@@ -156,49 +177,49 @@ body {
 
 .chips-settings-card__title {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--chips-settings-cpx-16);
   line-height: 1.4;
 }
 
 .chips-settings-card__header {
-  padding: 16px;
+  padding: var(--chips-settings-cpx-16);
 }
 
 .chips-settings-card__meta {
-  margin: 8px 0 0;
+  margin: var(--chips-settings-cpx-8) 0 0;
   color: var(--chips-settings-muted);
-  font-size: 13px;
+  font-size: var(--chips-settings-cpx-13);
 }
 
 .chips-settings-card__list {
-  margin: 14px 0 0;
+  margin: var(--chips-settings-cpx-14) 0 0;
   display: grid;
-  gap: 10px;
+  gap: var(--chips-settings-cpx-10);
 }
 
 .chips-settings-card__item {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--chips-settings-cpx-16);
 }
 
 .chips-settings-card__item dt {
   margin: 0;
   color: var(--chips-settings-muted);
-  font-size: 13px;
+  font-size: var(--chips-settings-cpx-13);
 }
 
 .chips-settings-card__item dd {
   margin: 0;
   font-weight: 600;
-  font-size: 13px;
+  font-size: var(--chips-settings-cpx-13);
 }
 
 .chips-settings-card__toolbar {
-  margin-top: 14px;
+  margin-top: var(--chips-settings-cpx-14);
   display: grid;
   grid-template-columns: 1fr auto auto;
-  gap: 8px;
+  gap: var(--chips-settings-cpx-8);
   align-items: center;
 }
 
@@ -208,10 +229,10 @@ body {
 }
 
 .chips-settings-alert {
-  border-radius: 10px;
+  border-radius: var(--chips-settings-cpx-10);
   border: 1px solid transparent;
-  padding: 10px 12px;
-  font-size: 13px;
+  padding: var(--chips-settings-cpx-10) var(--chips-settings-cpx-12);
+  font-size: var(--chips-settings-cpx-13);
 }
 
 .chips-settings-alert--error {
@@ -223,12 +244,12 @@ body {
 .chips-settings-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
+  font-size: var(--chips-settings-cpx-13);
 }
 
 .chips-settings-table th,
 .chips-settings-table td {
-  padding: 12px;
+  padding: var(--chips-settings-cpx-12);
   border-bottom: 1px solid var(--chips-settings-border);
   text-align: left;
   vertical-align: top;
@@ -245,20 +266,20 @@ body {
 }
 
 .chips-settings-table__subtext {
-  margin: 4px 0 0;
+  margin: var(--chips-settings-cpx-4) 0 0;
   color: var(--chips-settings-muted);
 }
 
 .chips-settings-table__actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--chips-settings-cpx-8);
 }
 
 .chips-settings-table__badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--chips-settings-cpx-8);
 }
 
 .chips-settings-table__empty {
@@ -269,39 +290,22 @@ body {
 .chips-settings-table__hint {
   margin: 0;
   color: var(--chips-settings-muted);
-  font-size: 12px;
+  font-size: var(--chips-settings-cpx-12);
 }
 
 .chips-settings-form {
   display: grid;
-  gap: 12px;
+  gap: var(--chips-settings-cpx-12);
 }
 
 .chips-settings-form__field {
   display: grid;
-  gap: 8px;
+  gap: var(--chips-settings-cpx-8);
 }
 
 .chips-settings-form__label {
-  font-size: 13px;
+  font-size: var(--chips-settings-cpx-13);
   color: var(--chips-settings-muted);
-}
-
-.chips-settings-fallback-textarea {
-  width: 100%;
-  min-height: 112px;
-  border: 1px solid var(--chips-settings-border);
-  border-radius: 10px;
-  background: var(--chips-settings-panel-bg-elevated);
-  color: var(--chips-settings-text);
-  padding: 10px 12px;
-  font: inherit;
-  resize: vertical;
-}
-
-.chips-settings-fallback-textarea:focus-visible {
-  outline: 2px solid var(--chips-settings-accent);
-  outline-offset: 1px;
 }
 
 .chips-settings-form__field--switch {
@@ -312,23 +316,23 @@ body {
 .chips-settings-dialog-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
+  gap: var(--chips-settings-cpx-8);
 }
 
 .chips-settings-list {
-  margin: 14px 0 0;
+  margin: var(--chips-settings-cpx-14) 0 0;
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 10px;
+  gap: var(--chips-settings-cpx-10);
 }
 
 .chips-settings-list__item {
   display: grid;
-  gap: 6px;
-  grid-template-columns: minmax(120px, 180px) auto 1fr;
+  gap: var(--chips-settings-cpx-6);
+  grid-template-columns: minmax(calc(120px * var(--chips-settings-layout-scale)), calc(180px * var(--chips-settings-layout-scale))) auto 1fr;
   align-items: center;
-  font-size: 13px;
+  font-size: var(--chips-settings-cpx-13);
 }
 
 .chips-settings-list__message {
@@ -339,10 +343,10 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 56px;
+  min-width: var(--chips-settings-cpx-56);
   border-radius: 999px;
-  padding: 2px 10px;
-  font-size: 12px;
+  padding: var(--chips-settings-cpx-2) var(--chips-settings-cpx-10);
+  font-size: var(--chips-settings-cpx-12);
 }
 
 .chips-settings-status--ok {
@@ -361,57 +365,70 @@ body {
 }
 
 .chips-settings-log {
-  margin-top: 12px;
+  margin-top: var(--chips-settings-cpx-12);
   border: 1px solid var(--chips-settings-border);
-  border-radius: 8px;
+  border-radius: var(--chips-settings-cpx-8);
   background: var(--chips-settings-panel-bg-overlay);
   color: var(--chips-settings-text);
-  max-height: 240px;
+  max-height: var(--chips-settings-cpx-240);
   overflow: auto;
 }
 
 .chips-settings-log pre {
   margin: 0;
-  font-size: 12px;
-  padding: 12px;
+  font-size: var(--chips-settings-cpx-12);
+  padding: var(--chips-settings-cpx-12);
   white-space: pre-wrap;
 }
 
 .chips-settings-details {
-  margin-top: 12px;
+  margin-top: var(--chips-settings-cpx-12);
   border: 1px dashed var(--chips-settings-border);
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: var(--chips-settings-cpx-8);
+  padding: var(--chips-settings-cpx-10);
 }
 
 .chips-settings-details summary {
   cursor: pointer;
-  font-size: 13px;
+  font-size: var(--chips-settings-cpx-13);
   color: var(--chips-settings-muted-strong);
 }
 
 .chips-settings-details pre {
-  margin: 10px 0 0;
-  font-size: 12px;
+  margin: var(--chips-settings-cpx-10) 0 0;
+  font-size: var(--chips-settings-cpx-12);
   white-space: pre-wrap;
 }
 
 .chips-file-upload__dropzone {
   border: 1px dashed var(--chips-settings-border);
-  border-radius: 10px;
-  padding: 16px;
-  min-height: 48px;
+  border-radius: var(--chips-settings-cpx-10);
+  padding: var(--chips-settings-cpx-16);
+  min-height: var(--chips-settings-cpx-48);
   cursor: pointer;
   background: var(--chips-settings-panel-bg-elevated);
 }
 
-.chips-file-upload--dragging .chips-file-upload__dropzone {
+.chips-file-upload[data-state='dragging'] .chips-file-upload__dropzone,
+.chips-file-upload.chips-file-upload--dragging .chips-file-upload__dropzone {
   border-color: var(--chips-settings-accent);
   background: var(--chips-settings-accent-soft);
 }
 
-.chips-file-upload--invalid .chips-file-upload__dropzone {
+.chips-file-upload[data-state='selected'] .chips-file-upload__dropzone,
+.chips-file-upload[data-state='active'] .chips-file-upload__dropzone,
+.chips-file-upload.chips-file-upload--has-file .chips-file-upload__dropzone {
+  border-color: var(--chips-settings-border-strong);
+}
+
+.chips-file-upload[data-state='invalid'] .chips-file-upload__dropzone,
+.chips-file-upload[data-state='error'] .chips-file-upload__dropzone,
+.chips-file-upload.chips-file-upload--invalid .chips-file-upload__dropzone {
   border-color: var(--chips-settings-danger);
+}
+
+.chips-file-upload[data-state='disabled'] .chips-file-upload__dropzone {
+  cursor: not-allowed;
 }
 
 .chips-file-upload__input {
@@ -419,37 +436,37 @@ body {
 }
 
 .chips-file-upload__meta {
-  margin-top: 8px;
-  font-size: 12px;
+  margin-top: var(--chips-settings-cpx-8);
+  font-size: var(--chips-settings-cpx-12);
   color: var(--chips-settings-muted);
   word-break: break-all;
 }
 
-[data-scope='dialog'][data-part='positioner'] {
+[data-scope='settings.dialog.confirm'][data-part='positioner'] {
   z-index: var(--chips-z-index-modal-backdrop, 1390) !important;
 }
 
-.chips-settings-confirm-dialog [data-part='close'] {
+[data-scope='settings.dialog.confirm'] [data-part='close'] {
   display: none;
 }
 
 .chips-settings-bootstrap-error {
-  margin: 48px auto;
-  max-width: 540px;
+  margin: var(--chips-settings-cpx-48) auto;
+  max-width: var(--chips-settings-cpx-540);
   border: 1px solid var(--chips-settings-danger);
-  border-radius: 12px;
+  border-radius: var(--chips-settings-cpx-12);
   background: var(--chips-settings-panel-bg);
-  padding: 20px;
+  padding: var(--chips-settings-cpx-20);
   box-shadow: var(--chips-settings-shadow);
 }
 
 .chips-settings-bootstrap-error__title {
   margin: 0;
-  font-size: 20px;
+  font-size: var(--chips-settings-cpx-20);
 }
 
 .chips-settings-bootstrap-error__desc {
-  margin: 10px 0;
+  margin: var(--chips-settings-cpx-10) 0;
   color: var(--chips-settings-muted);
 }
 
@@ -457,11 +474,11 @@ body {
   white-space: pre-wrap;
   word-break: break-word;
   margin: 0;
-  padding: 10px;
-  border-radius: 8px;
+  padding: var(--chips-settings-cpx-10);
+  border-radius: var(--chips-settings-cpx-8);
   background: var(--chips-settings-danger-soft);
   color: var(--chips-settings-danger);
-  font-size: 12px;
+  font-size: var(--chips-settings-cpx-12);
 }
 
 @media (max-width: 960px) {

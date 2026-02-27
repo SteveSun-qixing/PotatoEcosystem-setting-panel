@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button } from '@chips/component-library';
+import { ChipsButton } from '@chips/component-library';
 
 import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
 import type { BundleStatus } from '@/types';
@@ -56,51 +56,53 @@ export function BundlePanel() {
     void refresh();
   }, []);
 
+  const panelState = error ? 'error' : loading || saving ? 'loading' : 'idle';
+
   return (
-    <section className="chips-settings-panel">
-      <header className="chips-settings-panel__header">
-        <div>
-          <h2 className="chips-settings-panel__title">{t('i18n.plugin.695001')}</h2>
-          <p className="chips-settings-panel__description">{t('i18n.plugin.695002')}</p>
+    <section className="chips-settings-panel" data-scope="settings.panel.bundle" data-part="panel" data-state={panelState}>
+      <header className="chips-settings-panel__header" data-part="header">
+        <div data-part="header-content">
+          <h2 className="chips-settings-panel__title" data-part="title">{t('i18n.plugin.695001')}</h2>
+          <p className="chips-settings-panel__description" data-part="description">{t('i18n.plugin.695002')}</p>
         </div>
-        <Button onClick={() => void refresh()} disabled={loading}>
+        <ChipsButton onClick={() => void refresh()} disabled={loading} data-part="refresh-action">
           {t('i18n.plugin.695003')}
-        </Button>
+        </ChipsButton>
       </header>
 
       <ErrorAlert error={error} summaryKey="i18n.plugin.691008" />
 
-      <article className="chips-settings-card">
-        <h3 className="chips-settings-card__title">{t('i18n.plugin.695004')}</h3>
+      <article className="chips-settings-card" data-part="card-status">
+        <h3 className="chips-settings-card__title" data-part="card-title">{t('i18n.plugin.695004')}</h3>
         {status ? (
-          <dl className="chips-settings-card__list">
-            <div className="chips-settings-card__item">
+          <dl className="chips-settings-card__list" data-part="definition-list">
+            <div className="chips-settings-card__item" data-part="definition-item">
               <dt>{t('i18n.plugin.695005')}</dt>
               <dd>{status.healthy ? t('i18n.plugin.695006') : t('i18n.plugin.695007')}</dd>
             </div>
-            <div className="chips-settings-card__item">
+            <div className="chips-settings-card__item" data-part="definition-item">
               <dt>{t('i18n.plugin.695008')}</dt>
               <dd>{status.installedCount}</dd>
             </div>
-            <div className="chips-settings-card__item">
+            <div className="chips-settings-card__item" data-part="definition-item">
               <dt>{t('i18n.plugin.695009')}</dt>
               <dd>{status.requiredTypes.join(', ')}</dd>
             </div>
           </dl>
         ) : (
-          <p className="chips-settings-card__meta">{t('i18n.plugin.695010')}</p>
+          <p className="chips-settings-card__meta" data-part="meta">{t('i18n.plugin.695010')}</p>
         )}
       </article>
 
-      <article className="chips-settings-card">
-        <h3 className="chips-settings-card__title">{t('i18n.plugin.695011')}</h3>
-        <div className="chips-settings-panel__actions">
-          <Button onClick={() => void updateBundle()} disabled={saving}>
+      <article className="chips-settings-card" data-part="card-actions">
+        <h3 className="chips-settings-card__title" data-part="card-title">{t('i18n.plugin.695011')}</h3>
+        <div className="chips-settings-panel__actions" data-part="actions">
+          <ChipsButton onClick={() => void updateBundle()} disabled={saving} data-part="update-action">
             {t('i18n.plugin.695012')}
-          </Button>
-          <Button onClick={() => void repairBundle()} disabled={saving}>
+          </ChipsButton>
+          <ChipsButton onClick={() => void repairBundle()} disabled={saving} data-part="repair-action">
             {t('i18n.plugin.695013')}
-          </Button>
+          </ChipsButton>
         </div>
       </article>
     </section>

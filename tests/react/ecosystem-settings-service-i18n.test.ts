@@ -15,7 +15,9 @@ const { runtimeGateway } = vi.hoisted(() => ({
     theme: {
       getCurrent: vi.fn(),
       getAllCss: vi.fn(),
-      apply: vi.fn()
+      apply: vi.fn(),
+      resolve: vi.fn(),
+      contractGet: vi.fn()
     },
     file: {
       read: vi.fn(),
@@ -66,6 +68,31 @@ describe('EcosystemSettingsService i18n canonical routes', () => {
 
     runtimeGateway.i18n.registerVocabulary.mockReset();
     runtimeGateway.i18n.registerVocabulary.mockResolvedValue({ registered: 0 });
+
+    runtimeGateway.theme.getCurrent.mockReset();
+    runtimeGateway.theme.getCurrent.mockResolvedValue({ themeId: 'chips-official.default-theme' });
+
+    runtimeGateway.theme.getAllCss.mockReset();
+    runtimeGateway.theme.getAllCss.mockResolvedValue({
+      css: {
+        tokens: ':root { --chips-token: #000; }'
+      }
+    });
+
+    runtimeGateway.theme.resolve.mockReset();
+    runtimeGateway.theme.resolve.mockResolvedValue({
+      resolvedThemeId: 'chips-official.default-theme',
+      mergedTokens: {
+        '--chips-token': '#000'
+      }
+    });
+
+    runtimeGateway.theme.contractGet.mockReset();
+    runtimeGateway.theme.contractGet.mockResolvedValue({
+      contract: {
+        components: []
+      }
+    });
   });
 
   it('uses i18n.getCurrent to read current locale', async () => {
@@ -141,5 +168,53 @@ describe('EcosystemSettingsService i18n canonical routes', () => {
       ([namespace]) => namespace === 'i18n'
     );
     expect(i18nInvokeCalls).toEqual([]);
+  });
+
+  it('refreshes theme runtime snapshot through five-action chain', async () => {
+    const sequence: string[] = [];
+
+    runtimeGateway.theme.getCurrent.mockImplementation(async (params: { appId?: string }) => {
+      sequence.push(params.appId ? 'getCurrent(app)' : 'getCurrent(global)');
+      return { themeId: 'chips-official.default-theme' };
+    });
+    runtimeGateway.theme.resolve.mockImplementation(async () => {
+      sequence.push('resolve');
+      return {
+        resolvedThemeId: 'chips-official.default-theme',
+        mergedTokens: {
+          '--chips-token': '#000'
+        }
+      };
+    });
+    runtimeGateway.theme.contractGet.mockImplementation(async () => {
+      sequence.push('contractGet');
+      return { contract: { components: [] } };
+    });
+    runtimeGateway.theme.getAllCss.mockImplementation(async () => {
+      sequence.push('getAllCss');
+      return { css: { tokens: ':root { --chips-token: #000; }' } };
+    });
+
+    await service.refreshThemeCss();
+
+    expect(runtimeGateway.theme.resolve).toHaveBeenCalledWith({
+      chain: {
+        global: 'chips-official.default-theme',
+        app: 'chips-official.default-theme'
+      }
+    });
+    expect(runtimeGateway.theme.contractGet).toHaveBeenCalledWith({
+      themeId: 'chips-official.default-theme'
+    });
+    expect(runtimeGateway.theme.getAllCss).toHaveBeenCalledWith({
+      appId: 'chips-official.ecosystem-settings'
+    });
+    expect(sequence).toEqual([
+      'getCurrent(app)',
+      'getCurrent(global)',
+      'resolve',
+      'contractGet',
+      'getAllCss'
+    ]);
   });
 });

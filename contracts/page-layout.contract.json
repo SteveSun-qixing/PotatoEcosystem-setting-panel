@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Chips Settings Page Layout Contract",
+  "type": "object",
+  "properties": {
+    "owner": {
+      "const": "page"
+    },
+    "unit": {
+      "const": "cpx"
+    },
+    "baseWidth": {
+      "const": 1024
+    },
+    "contractVersion": {
+      "type": "string"
+    }
+  },
+  "required": ["owner", "unit", "baseWidth"],
+  "additionalProperties": true
+}

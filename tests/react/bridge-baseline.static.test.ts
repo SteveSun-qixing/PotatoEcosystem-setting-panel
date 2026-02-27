@@ -1,9 +1,10 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
 const sourceRoot = join(__dirname, '..', '..', 'src');
+const allowedLegacyRoot = join(sourceRoot, 'archive');
 
 function collectFiles(root: string): string[] {
   const entries = readdirSync(root);
@@ -21,7 +22,7 @@ function collectFiles(root: string): string[] {
       continue;
     }
 
-    if (!fullPath.endsWith('.ts') && !fullPath.endsWith('.tsx') && !fullPath.endsWith('.d.ts')) {
+    if (!fullPath.endsWith('.ts') && !fullPath.endsWith('.tsx') && !fullPath.endsWith('.d.ts') && !fullPath.endsWith('.vue')) {
       continue;
     }
 
@@ -32,11 +33,48 @@ function collectFiles(root: string): string[] {
 }
 
 describe('settings bridge static baseline', () => {
-  it('has no direct bridge invoke on main path', () => {
+  it('keeps only react entry on main path', () => {
+    expect(existsSync(join(sourceRoot, 'main.tsx'))).toBe(true);
+    expect(existsSync(join(sourceRoot, 'main.ts'))).toBe(false);
+  });
+
+  it('has no active vue source outside archive', () => {
     const files = collectFiles(sourceRoot);
-    const offenders = files.filter((filePath) => /window\.chips\.invoke\(/.test(readFileSync(filePath, 'utf8')));
+    const offenders = files.filter((filePath) => filePath.endsWith('.vue') && !filePath.startsWith(allowedLegacyRoot));
 
     expect(offenders.map((filePath) => relative(sourceRoot, filePath))).toEqual([]);
+  });
+
+  it('has no direct bridge invoke on main path', () => {
+    const files = collectFiles(sourceRoot);
+    const offenders = files.filter((filePath) => /window\.chips[!?]?\.invoke\(/.test(readFileSync(filePath, 'utf8')));
+
+    expect(offenders.map((filePath) => relative(sourceRoot, filePath))).toEqual([]);
+  });
+
+  it('has no archive imports on main path', () => {
+    const files = collectFiles(sourceRoot);
+    const importPattern = /from\s+['"](?:@\/)?archive\/|from\s+['"](?:@\/)?src\/archive\/|from\s+['"]\.\.\/archive\/|from\s+['"]\.\.\/\.\.\/archive\//;
+    const dynamicImportPattern = /import\(\s*['"](?:@\/)?archive\/|import\(\s*['"](?:@\/)?src\/archive\/|import\(\s*['"]\.\.\/archive\/|import\(\s*['"]\.\.\/\.\.\/archive\//;
+    const offenders = files.filter((filePath) => {
+      const content = readFileSync(filePath, 'utf8');
+      return importPattern.test(content) || dynamicImportPattern.test(content);
+    });
+
+    expect(offenders.map((filePath) => relative(sourceRoot, filePath))).toEqual([]);
+  });
+
+  it('keeps archive traceability docs', () => {
+    const requiredDocs = [
+      'archive/README.md',
+      'archive/legacy-vue/README.md',
+      'archive/legacy-bridge/README.md',
+      'archive/legacy-utils/README.md',
+      'archive/legacy-docs/README.md',
+    ];
+
+    const missing = requiredDocs.filter((docPath) => !existsSync(join(sourceRoot, docPath)));
+    expect(missing).toEqual([]);
   });
 
   it('has no legacy action literals on main path', () => {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Button, Input, Select } from '@chips/component-library';
+import { ChipsButton, ChipsInput, ChipsSelect } from '@chips/component-library';
 
 import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
 import type { WorkspaceExchangePolicy } from '@/types';
@@ -63,39 +63,42 @@ export function FileSystemPanel() {
     void refresh();
   }, []);
 
+  const panelState = error ? 'error' : loading || saving ? 'loading' : 'idle';
+
   return (
-    <section className="chips-settings-panel">
-      <header className="chips-settings-panel__header">
-        <div>
-          <h2 className="chips-settings-panel__title">{t('i18n.plugin.696001')}</h2>
-          <p className="chips-settings-panel__description">{t('i18n.plugin.696002')}</p>
+    <section className="chips-settings-panel" data-scope="settings.panel.filesystem" data-part="panel" data-state={panelState}>
+      <header className="chips-settings-panel__header" data-part="header">
+        <div data-part="header-content">
+          <h2 className="chips-settings-panel__title" data-part="title">{t('i18n.plugin.696001')}</h2>
+          <p className="chips-settings-panel__description" data-part="description">{t('i18n.plugin.696002')}</p>
         </div>
-        <Button onClick={() => void refresh()} disabled={loading}>
+        <ChipsButton onClick={() => void refresh()} disabled={loading} data-part="refresh-action">
           {t('i18n.plugin.696003')}
-        </Button>
+        </ChipsButton>
       </header>
 
       <ErrorAlert error={error} summaryKey="i18n.plugin.691008" />
 
-      <article className="chips-settings-card">
-        <h3 className="chips-settings-card__title">{t('i18n.plugin.696004')}</h3>
-        <div className="chips-settings-card__toolbar">
-          <Input
+      <article className="chips-settings-card" data-part="card-workspace">
+        <h3 className="chips-settings-card__title" data-part="card-title">{t('i18n.plugin.696004')}</h3>
+        <div className="chips-settings-card__toolbar" data-part="toolbar">
+          <ChipsInput
             aria-label={t('i18n.plugin.696004')}
             value={workspacePath}
             onChange={(event) => setWorkspacePath(event.target.value)}
             placeholder={t('i18n.plugin.696005')}
+            data-part="workspace-path-field"
           />
-          <Button onClick={() => void savePath()} disabled={saving}>
+          <ChipsButton onClick={() => void savePath()} disabled={saving} data-part="save-path-action">
             {t('i18n.plugin.696006')}
-          </Button>
+          </ChipsButton>
         </div>
       </article>
 
-      <article className="chips-settings-card">
-        <h3 className="chips-settings-card__title">{t('i18n.plugin.696007')}</h3>
-        <div className="chips-settings-card__toolbar">
-          <Select
+      <article className="chips-settings-card" data-part="card-policy">
+        <h3 className="chips-settings-card__title" data-part="card-title">{t('i18n.plugin.696007')}</h3>
+        <div className="chips-settings-card__toolbar" data-part="toolbar">
+          <ChipsSelect
             label={t('i18n.plugin.696008')}
             value={policy.mode}
             options={[
@@ -109,7 +112,7 @@ export function FileSystemPanel() {
               }))
             }
           />
-          <Select
+          <ChipsSelect
             label={t('i18n.plugin.696009')}
             value={policy.conflict}
             options={[
@@ -124,9 +127,9 @@ export function FileSystemPanel() {
               }))
             }
           />
-          <Button onClick={() => void savePolicy()} disabled={saving}>
+          <ChipsButton onClick={() => void savePolicy()} disabled={saving} data-part="save-policy-action">
             {t('i18n.plugin.696010')}
-          </Button>
+          </ChipsButton>
         </div>
       </article>
     </section>

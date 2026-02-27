@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button } from '@chips/component-library';
+import { ChipsButton } from '@chips/component-library';
 
 import { useI18n } from '@/i18n';
 import { BundlePanel } from '@/features/panels/BundlePanel';
@@ -56,28 +56,30 @@ export function App({ onLocaleCommitted }: AppProps) {
   );
 
   return (
-    <div className="chips-settings-shell">
-      <aside className="chips-settings-shell__sidebar">
-        <header className="chips-settings-shell__header">
-          <h1 className="chips-settings-shell__title">{t('i18n.plugin.699007')}</h1>
-          <p className="chips-settings-shell__subtitle">{t('i18n.plugin.699008')}</p>
+    <div className="chips-settings-shell" data-scope="settings.shell" data-part="root" data-state={activeSection}>
+      <aside className="chips-settings-shell__sidebar" data-part="sidebar">
+        <header className="chips-settings-shell__header" data-part="header">
+          <h1 className="chips-settings-shell__title" data-part="title">{t('i18n.plugin.699007')}</h1>
+          <p className="chips-settings-shell__subtitle" data-part="subtitle">{t('i18n.plugin.699008')}</p>
         </header>
-        <nav className="chips-settings-shell__menu" aria-label={t('i18n.plugin.699009')}>
+        <nav className="chips-settings-shell__menu" data-part="menu" aria-label={t('i18n.plugin.699009')}>
           {menuItems.map((item) => (
-            <Button
+            <ChipsButton
               key={item.id}
               type="button"
               className={`chips-settings-shell__menu-item ${activeSection === item.id ? 'chips-settings-shell__menu-item--active' : ''}`}
+              data-part="menu-item"
+              data-state={activeSection === item.id ? 'active' : 'idle'}
               aria-current={activeSection === item.id ? 'page' : undefined}
               onClick={() => setActiveSection(item.id)}
             >
-              <span className="chips-settings-shell__menu-label">{item.label}</span>
-              <span className="chips-settings-shell__menu-desc">{item.desc}</span>
-            </Button>
+              <span className="chips-settings-shell__menu-label" data-part="menu-label">{item.label}</span>
+              <span className="chips-settings-shell__menu-desc" data-part="menu-desc">{item.desc}</span>
+            </ChipsButton>
           ))}
         </nav>
       </aside>
-      <main className="chips-settings-shell__main">
+      <main className="chips-settings-shell__main" data-part="main" data-state={activeSection}>
         {activeSection === 'runtime' ? <OverviewPanel /> : null}
         {activeSection === 'language' ? <LanguagePanel onLocaleCommitted={onLocaleCommitted} /> : null}
         {activeSection === 'theme' ? <ThemePanel /> : null}

@@ -10,7 +10,8 @@ export default defineConfig({
     },
   },
   test: {
-    include: ['tests/react/**/*.test.ts?(x)'],
+    include: ['tests/**/*.test.ts?(x)'],
+    exclude: ['tests/archive/**'],
     globals: true,
     environment: 'jsdom',
     setupFiles: ['tests/react/setup.ts'],

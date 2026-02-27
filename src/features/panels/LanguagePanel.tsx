@@ -1,40 +1,10 @@
-import { useEffect, useId, useState, type ComponentType, type TextareaHTMLAttributes } from 'react';
-import * as ChipsComponentLibrary from '@chips/component-library';
+import { useEffect, useState } from 'react';
+import { ChipsButton, ChipsInput, ChipsSelect, ChipsTextarea } from '@chips/component-library';
 
 import { ecosystemSettingsService } from '@/services/ecosystem-settings-service';
 import { useI18n } from '@/i18n';
 import { ErrorAlert } from '@/features/shared/ErrorAlert';
 import { toDisplayError, type DisplayError } from '@/utils/error';
-
-const { Button, Input, Select } = ChipsComponentLibrary;
-
-type ChipsTextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
-  label?: string;
-  helperText?: string;
-  errorText?: string;
-  invalid?: boolean;
-  chipsScope?: string;
-};
-
-const ChipsTextarea = (ChipsComponentLibrary as { Textarea?: ComponentType<ChipsTextareaProps> }).Textarea;
-
-function FallbackTextarea({ label, chipsScope = 'textarea', className, id, ...props }: ChipsTextareaProps) {
-  const generatedId = useId();
-  const controlId = id ?? generatedId;
-
-  return (
-    <div className="chips-settings-form__field" data-scope={chipsScope} data-part="root">
-      {label ? (
-        <label className="chips-settings-form__label" htmlFor={controlId}>
-          {label}
-        </label>
-      ) : null}
-      <textarea {...props} id={controlId} className={['chips-settings-fallback-textarea', className].filter(Boolean).join(' ')} />
-    </div>
-  );
-}
-
-const TextareaField = ChipsTextarea ?? FallbackTextarea;
 
 interface LanguagePanelProps {
   onLocaleCommitted: (locale: string) => void;
@@ -100,58 +70,62 @@ export function LanguagePanel({ onLocaleCommitted }: LanguagePanelProps) {
     void refresh();
   }, []);
 
+  const panelState = error ? 'error' : loading || saving ? 'loading' : 'idle';
+
   return (
-    <section className="chips-settings-panel">
-      <header className="chips-settings-panel__header">
-        <div>
-          <h2 className="chips-settings-panel__title">{t('i18n.plugin.693001')}</h2>
-          <p className="chips-settings-panel__description">{t('i18n.plugin.693002')}</p>
+    <section className="chips-settings-panel" data-scope="settings.panel.language" data-part="panel" data-state={panelState}>
+      <header className="chips-settings-panel__header" data-part="header">
+        <div data-part="header-content">
+          <h2 className="chips-settings-panel__title" data-part="title">{t('i18n.plugin.693001')}</h2>
+          <p className="chips-settings-panel__description" data-part="description">{t('i18n.plugin.693002')}</p>
         </div>
-        <Button onClick={() => void refresh()} disabled={loading}>
+        <ChipsButton onClick={() => void refresh()} disabled={loading} data-part="refresh-action">
           {t('i18n.plugin.693003')}
-        </Button>
+        </ChipsButton>
       </header>
 
       <ErrorAlert error={error} summaryKey="i18n.plugin.692014" />
 
-      <article className="chips-settings-card">
-        <h3 className="chips-settings-card__title">{t('i18n.plugin.693004')}</h3>
-        <div className="chips-settings-card__toolbar">
-          <Select
+      <article className="chips-settings-card" data-part="card-locale">
+        <h3 className="chips-settings-card__title" data-part="card-title">{t('i18n.plugin.693004')}</h3>
+        <div className="chips-settings-card__toolbar" data-part="toolbar">
+          <ChipsSelect
             value={locale}
             options={locales.map((item) => ({ value: item, label: item }))}
             onValueChange={(value) => setLocale(value ?? '')}
           />
-          <Button onClick={() => void saveLocale()} disabled={saving}>
+          <ChipsButton onClick={() => void saveLocale()} disabled={saving} data-part="save-locale-action">
             {t('i18n.plugin.693005')}
-          </Button>
+          </ChipsButton>
         </div>
       </article>
 
-      <article className="chips-settings-card">
-        <h3 className="chips-settings-card__title">{t('i18n.plugin.693006')}</h3>
-        <div className="chips-settings-form">
-          <Input
+      <article className="chips-settings-card" data-part="card-dictionary">
+        <h3 className="chips-settings-card__title" data-part="card-title">{t('i18n.plugin.693006')}</h3>
+        <div className="chips-settings-form" data-part="form">
+          <ChipsInput
             label={t('i18n.plugin.693007')}
             aria-label={t('i18n.plugin.693007')}
             value={pluginId}
             onChange={(event) => setPluginId(event.target.value)}
             placeholder={t('i18n.plugin.693008')}
+            data-part="plugin-id-field"
           />
-          <TextareaField
+          <ChipsTextarea
             label={t('i18n.plugin.693009')}
             aria-label={t('i18n.plugin.693009')}
             value={entriesRaw}
             onChange={(event) => setEntriesRaw(event.target.value)}
             placeholder={t('i18n.plugin.693010')}
             rows={8}
+            data-part="entries-field"
           />
-          <div className="chips-settings-panel__actions">
-            <Button onClick={() => void updateDictionary()} disabled={saving}>
+          <div className="chips-settings-panel__actions" data-part="actions">
+            <ChipsButton onClick={() => void updateDictionary()} disabled={saving} data-part="update-dictionary-action">
               {t('i18n.plugin.693011')}
-            </Button>
+            </ChipsButton>
           </div>
-          {resultText ? <p className="chips-settings-card__meta">{t('i18n.plugin.693012', { result: resultText })}</p> : null}
+          {resultText ? <p className="chips-settings-card__meta" data-part="meta">{t('i18n.plugin.693012', { result: resultText })}</p> : null}
         </div>
       </article>
     </section>

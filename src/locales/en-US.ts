@@ -177,7 +177,8 @@ export const enUS = {
       '699024': 'Technical error code: {code}',
       '699025': 'Raw message: {raw}',
       '699026': 'Only .cpk packages are allowed. Drag and drop or click to choose.',
-      '699027': 'Cannot resolve local package path in current runtime. Use file picker inside Host.'
+      '699027': 'Cannot resolve local package path in current runtime. Use file picker inside Host.',
+      '699028': 'Failed to cache the selected package file.'
     }
   }
 } as const;
